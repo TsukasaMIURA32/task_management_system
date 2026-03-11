@@ -1,0 +1,461 @@
+/* ===============================
+   Google風ユーザーメニュー
+================================= */
+.user-menu-wrapper {
+  position: relative;
+}
+
+.user-menu-popover {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 400px;
+  background: rgb(235, 240, 245);
+  border: 1px solid #d0d5db;
+  border-radius: 32px;
+  box-shadow: 0 8px 24px rgba(60, 64, 67, 0.3);
+  padding: 22px 20px 26px;
+  display: none;
+  z-index: 2000;
+}
+
+.user-menu-popover.show {
+  display: block;
+}
+
+.user-menu-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  color: #444;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.user-menu-topmail {
+  margin: 4px 0 18px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.user-menu-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.user-menu-photo-wrap {
+  position: relative;
+  width: 92px;
+  height: 92px;
+}
+
+.user-menu-profile .user-menu-photo-wrap > i{
+	font-size: 85px !important;
+}
+
+.user-menu-camera {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #d0d5db;
+  background: #fff;
+  cursor: pointer;
+  color: #444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.user-menu-camera i {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: #444;
+}
+
+.user-menu-greeting {
+  margin: 14px 0 14px;
+  font-size: 28px;
+  color: #222;
+}
+
+.manage-account-btn {
+  border: 1px solid #8b9198;
+  background: #eef2f7;
+  color: #0b57d0;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.manage-account-btn:hover {
+  background: #e6ebf2;
+}
+
+.user-menu-account-box {
+  background: #ffffff;
+  border-radius: 32px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.user-menu-collapse-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px 10px;
+  font-size: 17px;
+  color: #2b2b2b;
+}
+
+.collapse-icon-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: #e3e7ed;
+  color: #5d636b;
+  cursor: pointer;
+}
+
+.user-menu-account-item,
+.user-menu-link-item {
+  margin: 0 20px 2px;
+/*  background: #fff;*/
+  min-height: 70px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+}
+
+ .border-bottom {
+  border-bottom: 3px solid rgb(235, 240, 245);
+}
+
+
+.user-menu-account-item {
+  gap: 16px;
+}
+
+.link-icon-edit i{
+	color: #fbbc04 !important;
+}
+
+.account-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1185d8;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.account-texts p {
+  margin: 0;
+}
+
+.account-name {
+  font-size: 16px;
+  color: #222;
+}
+
+.account-mail {
+  margin-top: 4px !important;
+  font-size: 14px;
+  color: #5f6368;
+}
+
+.user-menu-link-item {
+  gap: 16px;
+  font-size: 17px;
+  color: #222;
+}
+
+.link-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b57d0;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.link-icon-circle.plain {
+  background: transparent;
+  color: #444;
+  font-size: 24px;
+}
+
+.user-menu-footer {
+  margin-top: 26px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  color: #4f5358;
+  font-size: 14px;
+}
+
+.hidden {
+	display: none;
+}
+
+.editable-row {
+	width: 100%;
+}
+
+.editable-display {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.editable-edit {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.edit-icon-btn {
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	font-size: 14px;
+	color: #666;
+}
+
+.edit-icon-btn:hover {
+	color: #333;
+}
+
+.editable-edit input {
+	flex: 1;
+	padding: 6px 10px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+.save-btn,
+.cancel-btn {
+	border: none;
+	border-radius: 6px;
+	padding: 6px 10px;
+	cursor: pointer;
+}
+
+.save-btn {
+	background-color: #4285f4;
+	color: #fff;
+}
+
+.cancel-btn {
+	background-color: #eee;
+	color: #333;
+}
+
+.user-menu-greeting-wrap {
+	align-items: center;
+}
+
+/* ===============================
+   インライン編集用 追記
+================================= */
+
+/* hiddenが他のdisplay指定に負けないようにする */
+.hidden {
+  display: none !important;
+}
+
+.editable-row {
+  width: 100%;
+}
+
+/* メール表示部分 */
+#emailDisplay {
+  justify-content: center;
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+
+#emailDisplay #emailText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2b2b2b;
+  word-break: break-all;
+}
+
+/* 名前表示部分 */
+#nameDisplay {
+  justify-content: center;
+  gap: 10px;
+}
+
+.editable-display {
+  display: flex;
+  align-items: center;
+}
+
+.editable-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.edit-icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.edit-icon-btn:hover {
+  color: #333;
+}
+
+.editable-edit input {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #c7ccd3;
+  border-radius: 999px;
+  font-size: 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* メール入力欄 */
+#emailEdit input {
+  width: 260px;
+  max-width: 100%;
+}
+
+/* 名前入力欄 */
+#nameEdit input {
+  width: 180px;
+  max-width: 100%;
+  text-align: center;
+}
+
+.save-btn,
+.cancel-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.save-btn {
+  background-color: #0b57d0;
+  color: #fff;
+}
+
+.save-btn:hover {
+  background-color: #0847ad;
+}
+
+.cancel-btn {
+  background-color: #e6ebf2;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background-color: #dbe2ea;
+}
+
+.user-menu-greeting-wrap {
+  align-items: center;
+}
+
+.user-menu-greeting-wrap .user-menu-greeting {
+  margin: 14px 0 14px;
+}
+
+/* 編集中の入力欄の余白 */
+#emailEdit {
+  margin-bottom: 18px;
+}
+
+#nameEdit {
+  margin-bottom: 10px;
+}
+
+/*＝＝＝＝＝＝＝退会＝＝＝＝＝＝＝＝＝＝*/
+.hidden {
+	display: none !important;
+}
+
+.withdraw-confirm-text {
+	margin: 0;
+	padding: 24px 20px 12px;
+	text-align: center;
+	font-size: 17px;
+	font-weight: 600;
+	color: #222;
+}
+
+.withdraw-confirm-actions {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	padding: 0 20px 20px;
+}
+
+.withdraw-cancel-btn,
+.withdraw-confirm-btn {
+	border: none;
+	border-radius: 999px;
+	padding: 10px 18px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.withdraw-cancel-btn {
+	background: #e6ebf2;
+	color: #333;
+}
+
+.withdraw-cancel-btn:hover {
+	background: #dbe2ea;
+}
+
+.withdraw-confirm-btn {
+	background: #d93025;
+	color: #fff;
+}
+
+.withdraw-confirm-btn:hover {
+	background: #b3261e;
+}
