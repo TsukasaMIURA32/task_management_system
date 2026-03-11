@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+/* モーダルの外側だけ */
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(32, 33, 36, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 24px;
+}
+
+.edit-modal-overlay.show {
+  display: flex;
+}
+
+.edit-modal-shell {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* モーダル内の textarea だけ少し高めに */
+#editNoteContent {
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+/* 編集モーダルでも色クラスを note-form に当てる */
+#editNoteForm.color-yellow {
+  background-color: #fff8b8;
+}
+
+#editNoteForm.color-blue {
+  background-color: #d7ecff;
+}
+
+#editNoteForm.color-green {
+  background-color: #ddf5d6;
+}
+
+#editNoteForm.color-pink {
+  background-color: #ffdce5;
+}
+
+#editNoteForm.color-gray {
+  background-color: #eeeeee;
+}
