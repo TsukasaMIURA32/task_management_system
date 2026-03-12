@@ -14,8 +14,7 @@ public abstract class BaseDAO<T> {
 	protected abstract String getTableName();
 	protected abstract T mapRow(ResultSet rs) throws SQLException;
 	public abstract int insert(T dto);  // 登録の抽象メソッド
-
-	protected abstract int update(T dto);  // 更新の抽象メソッド
+	public abstract int update(T dto);  // 更新の抽象メソッド
 
 	public T getById(int id) {
 	    T dto = null;

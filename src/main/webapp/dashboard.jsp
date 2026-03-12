@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ page import="java.util.List"%>
+<%@ page import="task_management_system.com.task_management.dto.TaskDTO"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -71,8 +73,14 @@
 			<!-- 入力エリア -->
 			<div class="content-area" id="contentArea">
 				<section class="note-input-area">
-					<form class="note-form collapsed" id="noteForm" action="#"
-						method="post">
+					<form class="note-form collapsed" id="noteForm"
+						action="<%=request.getContextPath()%>/task/create" method="post"
+						enctype="multipart/form-data">
+						<div id="imagePreviewArea" class="image-preview-area hidden">
+							<div id="imagePreviewList" class="image-preview-list"></div>
+							<button type="button" id="removeImageButton"
+								class="remove-image-button">×</button>
+						</div>
 						<input type="text" id="noteTitle" name="title" placeholder="タイトル">
 						<div class="textarea-wrap">
 							<textarea id="noteContent" name="content" placeholder="メモを入力..."></textarea>
@@ -80,7 +88,7 @@
 							<label for="noteImage" class="image-upload-button"
 								id="imageUploadButton"> <i class="far fa-image"></i>
 							</label> <input type="file" id="noteImage" name="image" accept="image/*"
-								hidden>
+								multiple hidden>
 						</div>
 
 						<div class="form-actions">
@@ -107,7 +115,6 @@
 									aria-label="画像追加">
 									<i class="far fa-image"></i>
 								</button>
-								<input type="file" id="noteImage" accept="image/*" hidden>
 
 								<button type="button" class="tool-button"
 									data-popover="archivePopover" aria-label="アーカイブ">
@@ -151,12 +158,11 @@
 											data-color="color-pink"></button>
 									</div>
 								</div>
-
+								<input type="hidden" id="noteColorId" name="colorId" value="1">
 								<!-- メンバー追加 -->
 								<div class="popover-panel" id="memberPopover">
 									<div class="mini-form">
-										<input type="text" id="memberNameInput"
-											placeholder="メンバー名を入力">
+										<input type="text" id="memberNameInput" placeholder="メンバー名を入力">
 										<button type="button" id="addMemberButton">追加</button>
 									</div>
 									<div id="memberPreview" class="member-preview"></div>
@@ -175,32 +181,82 @@
 				<!-- タスク一覧 -->
 				<section class="notes-section">
 					<div class="notes-grid">
+						<%
+						List<TaskDTO> taskList = (List<TaskDTO>) request.getAttribute("taskList");
 
-						<article class="note-card color-yellow" data-note-id="1">
-							<h3>買い物メモ</h3>
-							<p>牛乳、パン、卵、コーヒーを買う</p>
+						if (taskList != null && !taskList.isEmpty()) {
+							for (TaskDTO task : taskList) {
+
+								String colorClass = "color-default";
+
+								switch (task.getColorId()) {
+								case 2:
+							colorClass = "color-yellow";
+							break;
+								case 3:
+							colorClass = "color-blue";
+							break;
+								case 4:
+							colorClass = "color-green";
+							break;
+								case 5:
+							colorClass = "color-pink";
+							break;
+								default:
+							colorClass = "color-default";
+							break;
+								}
+						%>
+						<article class="note-card <%=colorClass%>"
+							data-note-id="<%=task.getId()%>">
+
+							<%
+							List<Integer> imageIdList = task.getImageIdList();
+							int imageCount = imageIdList == null ? 0 : imageIdList.size();
+
+							if (imageCount > 0) {
+								String imageGridClass = "image-grid-" + (imageCount >= 4 ? 4 : imageCount);
+							%>
+							<div class="note-card-image-grid <%=imageGridClass%>">
+								<%
+								int displayCount = Math.min(imageCount, 4);
+								for (int i = 0; i < displayCount; i++) {
+									Integer imageId = imageIdList.get(i);
+								%>
+								<div
+									class="note-card-image-wrap <%=(i == 3 && imageCount > 4) ? "has-more" : ""%>">
+									<img
+										src="<%=request.getContextPath()%>/task/image?imageId=<%=imageId%>"
+										alt="タスク画像" class="note-card-image">
+
+									<%
+									if (i == 3 && imageCount > 4) {
+									%>
+									<div class="note-card-image-more">
+										+<%=imageCount - 4%></div>
+									<%
+									}
+									%>
+								</div>
+								<%
+								}
+								%>
+							</div>
+							<%
+							}
+							%>
+
+							<h3><%=task.getTitle() == null ? "" : task.getTitle()%></h3>
+							<p><%=task.getContent() == null ? "" : task.getContent()%></p>
 						</article>
-
-						<article class="note-card color-blue" data-note-id="2">
-							<h3>課題</h3>
-							<p>DAO親クラスの設計を進める</p>
-						</article>
-
-						<article class="note-card color-green" data-note-id="3">
-							<h3>打ち合わせ</h3>
-							<p>明日14時にチームで進捗確認</p>
-						</article>
-
-						<article class="note-card color-pink" data-note-id="4">
-							<h3>やること</h3>
-							<p>JSP画面作成、Git push、DB確認</p>
-						</article>
-
-						<article class="note-card color-default" data-note-id="5">
-							<h3>メモ</h3>
-							<p>画像アップロード機能は後で実装する</p>
-						</article>
-
+						<%
+						}
+						} else {
+						%>
+						<p>表示するタスクがありません。</p>
+						<%
+						}
+						%>
 					</div>
 				</section>
 			</div>
