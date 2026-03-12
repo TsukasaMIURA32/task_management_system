@@ -1,11 +1,16 @@
 package task_management_system.com.task_management.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TaskDTO extends BaseDTO{
 
 	private String title;
 	private String content;
 	private int ownerId;
 	private int colorId;
+	private boolean hasImage;
+	private List<Integer> imageIdList = new ArrayList<>();
 
 	
 
@@ -32,6 +37,22 @@ public class TaskDTO extends BaseDTO{
 	}
 	public void setColorId(int colorId) {
 		this.colorId = colorId;
+	}
+	
+	public boolean isHasImage() {
+		return hasImage;
+	}
+
+	public void setHasImage(boolean hasImage) {
+		this.hasImage = hasImage;
+	}
+	
+	public List<Integer> getImageIdList() {
+		return imageIdList;
+	}
+
+	public void setImageIdList(List<Integer> imageIdList) {
+		this.imageIdList = imageIdList;
 	}
 
 	

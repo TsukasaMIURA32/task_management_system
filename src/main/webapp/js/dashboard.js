@@ -10,10 +10,16 @@ const closeNoteForm = document.getElementById("closeNoteForm");
 const imageUploadButton = document.getElementById("imageUploadButton");
 const noteImage = document.getElementById("noteImage");
 
+/* プレビュー画像関連 */
+const imagePreviewArea = document.getElementById("imagePreviewArea");
+const imagePreviewList = document.getElementById("imagePreviewList");
+const removeImageButton = document.getElementById("removeImageButton");
+
 /* popover関連 */
 const popoverButtons = noteForm.querySelectorAll("[data-popover]");
 const popovers = noteForm.querySelectorAll(".popover-panel");
 const colorChips = noteForm.querySelectorAll("[data-color]");
+const noteColorId = document.getElementById("noteColorId");
 
 const memberNameInput = document.getElementById("memberNameInput");
 const addMemberButton = document.getElementById("addMemberButton");
@@ -28,6 +34,9 @@ const redoButton = document.getElementById("redoButton");
 /* 簡易状態管理 */
 let deletedDraft = null;
 let archived = false;
+
+/* 画像状態管理（追加式） */
+let selectedImageFiles = [];
 
 /* -------------------------
    サイドバー開閉
@@ -48,10 +57,10 @@ function openNoteForm() {
 function closeNoteFormIfEmpty() {
   const titleValue = noteTitle.value.trim();
   const contentValue = noteContent.value.trim();
+  const hasImage = selectedImageFiles.length > 0;
 
-  if (titleValue === "" && contentValue === "") {
-	resetNoteColor(); 
-	
+  if (titleValue === "" && contentValue === "" && !hasImage) {
+    resetNoteColor();
     noteForm.classList.remove("expanded");
     noteForm.classList.add("collapsed");
   }
@@ -60,11 +69,16 @@ function closeNoteFormIfEmpty() {
 function forceCloseNoteForm() {
   noteTitle.value = "";
   noteContent.value = "";
-  noteImage.value = "";
-  
-  resetNoteColor();   
-  
+
+  selectedImageFiles = [];
+  syncNoteImageInput();
+  renderImagePreviews();
+
+  resetNoteColor();
+
   memberPreview.textContent = "";
+  memberNameInput.value = "";
+
   noteForm.classList.remove("expanded");
   noteForm.classList.add("collapsed");
   closeAllPopovers();
@@ -95,16 +109,31 @@ noteForm.addEventListener("click", function (e) {
 ------------------------- */
 imageUploadButton.addEventListener("click", function (e) {
   e.stopPropagation();
+  openNoteForm();
   noteImage.click();
 });
 
 /* -------------------------
    閉じる処理
 ------------------------- */
+function hasNoteInput() {
+  const titleValue = noteTitle.value.trim();
+  const contentValue = noteContent.value.trim();
+  const hasImage = selectedImageFiles.length > 0;
+
+  return titleValue !== "" || contentValue !== "" || hasImage;
+}
+
 closeNoteForm.addEventListener("click", function (e) {
   e.preventDefault();
   e.stopPropagation();
-  forceCloseNoteForm();
+
+  if (hasNoteInput()) {
+    syncNoteImageInput();
+    noteForm.submit();
+  } else {
+    forceCloseNoteForm();
+  }
 });
 
 document.addEventListener("click", function () {
@@ -151,24 +180,13 @@ popovers.forEach((popover) => {
 });
 
 /* -------------------------
-   ① 背景色選択
-------------------------- */
-/* -------------------------
    カラー選択
 ------------------------- */
-
-//const colorChips = document.querySelectorAll(".color-chip");
-
 colorChips.forEach(chip => {
   chip.addEventListener("click", function () {
-
-    // いま付いている active を全部外す
     colorChips.forEach(c => c.classList.remove("active"));
-
-    // 押したものだけ active
     chip.classList.add("active");
 
-    // フォームの色変更
     const colorClass = chip.dataset.color;
 
     noteForm.classList.remove(
@@ -182,14 +200,34 @@ colorChips.forEach(chip => {
       noteForm.classList.add(colorClass);
     }
 
+    let colorId = 1;
+
+    switch (colorClass) {
+      case "color-yellow":
+        colorId = 2;
+        break;
+      case "color-blue":
+        colorId = 3;
+        break;
+      case "color-green":
+        colorId = 4;
+        break;
+      case "color-pink":
+        colorId = 5;
+        break;
+      default:
+        colorId = 1;
+        break;
+    }
+
+    noteColorId.value = colorId;
   });
 });
+
 /* -------------------------
    背景色リセット
 ------------------------- */
 function resetNoteColor() {
-
-  // noteFormの色クラス削除
   noteForm.classList.remove(
     "color-yellow",
     "color-blue",
@@ -198,9 +236,10 @@ function resetNoteColor() {
     "color-gray"
   );
 
-  // カラーチップのactive解除
   document.querySelectorAll(".color-chip")
     .forEach(chip => chip.classList.remove("active"));
+
+  noteColorId.value = 1;
 }
 
 /* -------------------------
@@ -216,11 +255,130 @@ addMemberButton.addEventListener("click", function () {
 });
 
 /* -------------------------
-   ③ 画像登録
+   ③ 画像登録（Google Keep風：1枚ずつ追加）
 ------------------------- */
 imageSelectButton.addEventListener("click", function () {
+  openNoteForm();
   noteImage.click();
   closeAllPopovers();
+});
+
+/* inputから選ばれた画像を状態に追加 */
+noteImage.addEventListener("change", function () {
+  const newFiles = Array.from(noteImage.files || []);
+
+  if (newFiles.length === 0) {
+    return;
+  }
+
+  for (const file of newFiles) {
+    if (selectedImageFiles.length >= 4) {
+      alert("画像は最大4枚まで追加できます。");
+      break;
+    }
+
+    const isDuplicate = selectedImageFiles.some(existing =>
+      existing.name === file.name &&
+      existing.size === file.size &&
+      existing.lastModified === file.lastModified
+    );
+
+    if (!isDuplicate) {
+      selectedImageFiles.push(file);
+    }
+  }
+
+  syncNoteImageInput();
+  renderImagePreviews();
+  openNoteForm();
+
+  /* 同じファイルを再度選んだときにもchangeが発火しやすいように */
+  noteImage.value = "";
+});
+
+/* File配列をinput.filesへ同期 */
+function syncNoteImageInput() {
+  const dataTransfer = new DataTransfer();
+
+  selectedImageFiles.forEach(file => {
+    dataTransfer.items.add(file);
+  });
+
+  noteImage.files = dataTransfer.files;
+}
+
+/* プレビュー描画 */
+function renderImagePreviews() {
+  imagePreviewList.innerHTML = "";
+
+  imagePreviewList.classList.remove(
+    "image-grid-1",
+    "image-grid-2",
+    "image-grid-3",
+    "image-grid-4"
+  );
+
+  const fileCount = selectedImageFiles.length;
+
+  if (fileCount === 0) {
+    imagePreviewArea.classList.add("hidden");
+    return;
+  }
+
+  if (fileCount === 1) {
+    imagePreviewList.classList.add("image-grid-1");
+  } else if (fileCount === 2) {
+    imagePreviewList.classList.add("image-grid-2");
+  } else if (fileCount === 3) {
+    imagePreviewList.classList.add("image-grid-3");
+  } else {
+    imagePreviewList.classList.add("image-grid-4");
+  }
+
+  selectedImageFiles.forEach((file, index) => {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const item = document.createElement("div");
+      item.classList.add("image-preview-item");
+
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.alt = "画像プレビュー";
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.classList.add("image-remove-button");
+      removeButton.textContent = "×";
+
+      removeButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        removeSelectedImage(index);
+      });
+
+      item.appendChild(img);
+      item.appendChild(removeButton);
+      imagePreviewList.appendChild(item);
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  imagePreviewArea.classList.remove("hidden");
+}
+
+/* 画像1枚削除 */
+function removeSelectedImage(index) {
+  selectedImageFiles.splice(index, 1);
+  syncNoteImageInput();
+  renderImagePreviews();
+}
+
+/* 画像全部削除 */
+removeImageButton.addEventListener("click", function () {
+  selectedImageFiles = [];
+  syncNoteImageInput();
+  renderImagePreviews();
 });
 
 /* -------------------------
@@ -242,10 +400,18 @@ deleteButton.addEventListener("click", function () {
     colorClasses: Array.from(noteForm.classList).filter((cls) =>
       cls.startsWith("color-")
     ),
+    memberText: memberPreview.textContent,
+    images: [...selectedImageFiles]
   };
 
   noteTitle.value = "";
   noteContent.value = "";
+  memberPreview.textContent = "";
+
+  selectedImageFiles = [];
+  syncNoteImageInput();
+  renderImagePreviews();
+
   noteForm.classList.remove(
     "color-yellow",
     "color-blue",
@@ -268,6 +434,11 @@ undoButton.addEventListener("click", function (e) {
   if (deletedDraft) {
     noteTitle.value = deletedDraft.title;
     noteContent.value = deletedDraft.content;
+    memberPreview.textContent = deletedDraft.memberText || "";
+
+    selectedImageFiles = [...(deletedDraft.images || [])];
+    syncNoteImageInput();
+    renderImagePreviews();
 
     noteForm.classList.remove(
       "color-yellow",
@@ -290,17 +461,29 @@ undoButton.addEventListener("click", function (e) {
 redoButton.addEventListener("click", function (e) {
   e.stopPropagation();
 
-  if (noteTitle.value !== "" || noteContent.value !== "") {
+  if (
+    noteTitle.value !== "" ||
+    noteContent.value !== "" ||
+    selectedImageFiles.length > 0
+  ) {
     deletedDraft = {
       title: noteTitle.value,
       content: noteContent.value,
       colorClasses: Array.from(noteForm.classList).filter((cls) =>
         cls.startsWith("color-")
       ),
+      memberText: memberPreview.textContent,
+      images: [...selectedImageFiles]
     };
 
     noteTitle.value = "";
     noteContent.value = "";
+    memberPreview.textContent = "";
+
+    selectedImageFiles = [];
+    syncNoteImageInput();
+    renderImagePreviews();
+
     noteForm.classList.remove(
       "color-yellow",
       "color-blue",
@@ -311,4 +494,11 @@ redoButton.addEventListener("click", function (e) {
 
     closeNoteFormIfEmpty();
   }
+});
+
+/* -------------------------
+   submit前にfilesを最終同期
+------------------------- */
+noteForm.addEventListener("submit", function () {
+  syncNoteImageInput();
 });
