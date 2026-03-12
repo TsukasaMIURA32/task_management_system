@@ -1,0 +1,263 @@
+@charset "UTF-8";
+
+/* ------------------------------
+   全体設定
+------------------------------ */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: #f8f9fa;
+    color: #202124;
+}
+
+/* 画面中央配置 */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background: linear-gradient(to bottom, #f8f9fa, #eef2f7);
+}
+
+/* カード */
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 16px;
+    padding: 40px 32px 32px;
+    box-shadow: 0 4px 20px rgba(60, 64, 67, 0.08);
+}
+
+/* タイトル */
+.auth-title {
+    margin: 0 0 8px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 500;
+    color: #202124;
+}
+
+/* サブタイトル */
+.auth-subtitle {
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 15px;
+    color: #5f6368;
+}
+
+/* エラーメッセージ */
+.error-message {
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    background: #fce8e6;
+    border: 1px solid #f28b82;
+    border-radius: 8px;
+    color: #d93025;
+    font-size: 14px;
+}
+
+/* フォームの各項目 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* ラベル */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #3c4043;
+}
+
+/* 入力欄 */
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    font-size: 16px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    background: #fff;
+    color: #202124;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* プレースホルダ */
+input::placeholder {
+    color: #9aa0a6;
+}
+
+/* フォーカス時 */
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+
+/* メインボタン */
+.btn-primary {
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 24px;
+    background: #1a73e8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+
+/* ホバー */
+.btn-primary:hover {
+    background: #1765cc;
+    box-shadow: 0 3px 10px rgba(26, 115, 232, 0.25);
+}
+
+/* クリック時 */
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+/* 下部リンク */
+.auth-links {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e8eaed;
+    text-align: center;
+}
+
+.auth-links p {
+    margin: 10px 0;
+}
+
+.auth-links a {
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+/* ラジオボタン用 */
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+/* 補足文 */
+.form-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #5f6368;
+}
+
+/* スマホ対応 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 32px 20px 24px;
+        border-radius: 12px;
+    }
+
+    .auth-title {
+        font-size: 26px;
+    }
+
+    .auth-subtitle {
+        font-size: 14px;
+    }
+}
+	.auth-title {
+    	letter-spacing: 0.5px;
+}
+	input[type="text"],
+	input[type="password"],
+	input[type="email"] {
+    	height: 52px;
+}
+	.btn-primary {
+    	border-radius: 9999px;
+}
+
+/* 成功メッセージ */
+	.success-message {
+    	margin-bottom: 24px;
+    	padding: 16px;
+    	background: #e6f4ea;
+    	border: 1px solid #81c995;
+    	border-radius: 8px;
+    	color: #137333;
+    	font-size: 14px;
+    	text-align: center;
+}
+/* 完了画面用 */
+	.complete-card {
+    	text-align: center;
+}
+	.complete-message {
+    	margin: 20px 0 28px;
+    	padding: 0 4px;
+    	color: #5f6368;
+    	font-size: 14px;
+    	line-height: 1.8;
+	}
+	.complete-message p {
+    	margin: 0;
+}
+	.btn-link {
+    	text-decoration: none;
+    	display: block;
+}
+	.btn-link {
+    	text-decoration: none;
+}
+
+	.btn-link.btn-primary {
+    	display: flex;
+    	justify-content: center;
+    	align-items: center;
+}
+
+	.btn-link,
+	.btn-link:visited,
+	.btn-link:hover,
+	.btn-link:active {
+    	text-decoration: none;
+    	color: white;
+}
+
+	.btn-primary {
+    	font-weight: 600;
+    	letter-spacing: 0.5px;
+}
