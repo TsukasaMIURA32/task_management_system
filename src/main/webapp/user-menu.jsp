@@ -4,26 +4,12 @@
 
 <div class="user-menu-popover" id="userMenuPopover">
 	<!-- メニュー画面 -->
-	<div id="userMenuView">
+	<div id="userMenuView" name="user-menu-view">
 		<button type="button" class="user-menu-close" id="userMenuClose"
 			aria-label="閉じる">×</button>
-
-		<!-- メールアドレス -->
-		<div class="editable-row">
-			<div id="emailDisplay" class="editable-display">
-				<span id="emailText">c32o0v0o30x@gmail.com</span>
-				<button type="button" class="edit-icon-btn" id="editEmailBtn"
-					aria-label="メールアドレスを編集">
-					<i class="fas fa-pen"></i>
-				</button>
-			</div>
-
-			<div id="emailEdit" class="editable-edit hidden">
-				<input type="email" id="emailInput" value="c32o0v0o30x@gmail.com">
-				<button type="button" class="save-btn" id="saveEmailBtn">保存</button>
-				<button type="button" class="cancel-btn" id="cancelEmailBtn">キャンセル</button>
-			</div>
-		</div>
+<!--			<div class="user-menu-title">-->
+<!--				<p>アカウントを管理</p>-->
+<!--			</div>-->
 
 		<div class="user-menu-profile">
 			<div class="user-menu-photo-wrap">
@@ -39,7 +25,7 @@
 				<div id="nameDisplay"
 					class="editable-display user-menu-greeting-wrap">
 					<p class="user-menu-greeting">
-						Hi, <span id="nameText">つかさ</span>!
+						Hi, <span id="nameText">${loginUser.userName}</span>!
 					</p>
 					<button type="button" class="edit-icon-btn" id="editNameBtn"
 						aria-label="名前を編集">
@@ -48,12 +34,29 @@
 				</div>
 
 				<div id="nameEdit" class="editable-edit hidden">
-					<input type="text" id="nameInput" value="つかさ">
+					<input type="text" id="nameInput" name="userName" value="${loginUser.userName}">
 					<button type="button" class="save-btn" id="saveNameBtn">保存</button>
-					<button type="button" class="cancel-btn" id="cancelNameBtn">キャンセル</button>
+					<button type="button" class="cancel-btn" id="cancelNameBtn"><i class="fas fa-times"></i></button>
 				</div>
 			</div>
-			<p>Manage your Account</p>
+			
+			<!-- メールアドレス -->
+			<div class="editable-row">
+				<div id="emailDisplay" class="editable-display">
+					<span id="emailText">${loginUser.email}</span>
+					<button type="button" class="edit-icon-btn" id="editEmailBtn"
+						aria-label="メールアドレスを編集">
+						<i class="fas fa-pen"></i>
+					</button>
+				</div>
+	
+				<div id="emailEdit" class="editable-edit hidden">
+					<input type="email" id="emailInput" name="email" value="${loginUser.email}">
+					<button type="button" class="save-btn" id="saveEmailBtn">保存</button>
+					<button type="button" class="cancel-btn" id="cancelEmailBtn"><i class="fas fa-times"></i></button>
+				</div>
+			</div>
+			
 		</div>
 
 		<div class="user-menu-account-box">
@@ -67,12 +70,14 @@
 					<span>退会する</span>
 				</div>
 
-				<div class="user-menu-link-item">
-					<div class="link-icon-circle plain">
-						<i class="fas fa-sign-out-alt"></i>
-					</div>
-					<span>ログアウト</span>
-				</div>
+				<form action="<%=request.getContextPath()%>/logout" method="post">
+					<button type="submit" class="user-menu-link-item logout-btn">
+						<div class="link-icon-circle plain">
+							<i class="fas fa-sign-out-alt"></i>
+						</div>
+						<span>ログアウト</span>
+					</button>
+				</form>
 			</div>
 
 			<!-- 退会確認表示 -->
@@ -85,6 +90,7 @@
 						class="withdraw-confirm-btn">退会</button>
 				</div>
 			</div>
+			<form id="withdrawForm" action="<%=request.getContextPath()%>/user/delete" method="post"></form>
 
 		</div>
 	</div>

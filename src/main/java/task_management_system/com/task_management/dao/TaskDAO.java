@@ -90,37 +90,36 @@ public class TaskDAO extends BaseDAO<TaskDTO> {
 	}
 
 	public List<TaskDTO> getTasksByUserId(int userId) {
-		List<TaskDTO> taskList = new ArrayList<>();
+	    List<TaskDTO> taskList = new ArrayList<>();
 
-		String sql = "SELECT DISTINCT t.* "
-				+ "FROM tasks t "
-				+ "LEFT JOIN tasks_users tu ON t.id = tu.task_id "
-				+ "WHERE t.owner_id = ? OR tu.user_id = ? "
-				+ "ORDER BY t.created_at DESC";
+	    String sql = "SELECT t.* "
+	            + "FROM tasks t "
+	            + "INNER JOIN tasks_users tu ON t.id = tu.task_id "
+	            + "WHERE tu.user_id = ? "
+	            + "ORDER BY t.created_at DESC";
 
-		try (Connection conn = DBCon.getConnection();
-				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	    try (Connection conn = DBCon.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-			pstmt.setInt(1, userId);
-			pstmt.setInt(2, userId);
+	        pstmt.setInt(1, userId);
 
-			try (ResultSet rs = pstmt.executeQuery()) {
-				while (rs.next()) {
-					TaskDTO dto = mapRow(rs);
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            while (rs.next()) {
+	                TaskDTO dto = mapRow(rs);
 
-					List<Integer> imageIdList = getImageIdsByTaskId(conn, dto.getId());
-					dto.setImageIdList(imageIdList);
-					dto.setHasImage(!imageIdList.isEmpty());
+	                List<Integer> imageIdList = getImageIdsByTaskId(conn, dto.getId());
+	                dto.setImageIdList(imageIdList);
+	                dto.setHasImage(!imageIdList.isEmpty());
 
-					taskList.add(dto);
-				}
-			}
+	                taskList.add(dto);
+	            }
+	        }
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 
-		return taskList;
+	    return taskList;
 	}
 	
 	private List<Integer> getImageIdsByTaskId(Connection conn, int taskId) throws SQLException {
@@ -206,41 +205,62 @@ public class TaskDAO extends BaseDAO<TaskDTO> {
 	
 	@Override
 	public int delete(int taskId) {
-		int result = 0;
 
-		String deleteImagesSql = "DELETE FROM task_images WHERE task_id = ?";
-		String deleteTaskUsersSql = "DELETE FROM tasks_users WHERE task_id = ?";
-		String deleteTaskSql = "DELETE FROM tasks WHERE id = ?";
+	    int result = 0;
+	    String sql = "DELETE FROM tasks WHERE id = ?";
 
-		try (Connection conn = DBCon.getConnection()) {
-			conn.setAutoCommit(false);
+	    try (Connection conn = DBCon.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-			try (
-				PreparedStatement pstmt1 = conn.prepareStatement(deleteImagesSql);
-				PreparedStatement pstmt2 = conn.prepareStatement(deleteTaskUsersSql);
-				PreparedStatement pstmt3 = conn.prepareStatement(deleteTaskSql)
-			) {
-				pstmt1.setInt(1, taskId);
-				pstmt1.executeUpdate();
+	        pstmt.setInt(1, taskId);
+	        result = pstmt.executeUpdate();
 
-				pstmt2.setInt(1, taskId);
-				pstmt2.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 
-				pstmt3.setInt(1, taskId);
-				result = pstmt3.executeUpdate();
+	    return result;
+	}
+	
+	public List<TaskDTO> getTasksByOwnerId(int ownerId) {
+	    List<TaskDTO> taskList = new ArrayList<>();
+	    String sql = "SELECT * FROM tasks WHERE owner_id = ?";
 
-				conn.commit();
+	    try (Connection con = DBCon.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
 
-			} catch (SQLException e) {
-				conn.rollback();
-				throw e;
-			}
+	        ps.setInt(1, ownerId);
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                taskList.add(mapRow(rs));
+	            }
+	        }
 
-		return result;
+	    } catch (SQLException e) {
+	        System.out.println("ownerタスク取得SQLエラー");
+	        e.printStackTrace();
+	    }
+
+	    return taskList;
+	}
+	
+	public int clearOwner(int taskId) {
+	    String sql = "UPDATE tasks SET owner_id = NULL, updated_at = NOW() WHERE id = ?";
+	    int result = 0;
+
+	    try (Connection conn = DBCon.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+	        pstmt.setInt(1, taskId);
+	        result = pstmt.executeUpdate();
+
+	    } catch (SQLException e) {
+	        System.out.println("owner解除SQLエラー");
+	        e.printStackTrace();
+	    }
+
+	    return result;
 	}
 	
 }

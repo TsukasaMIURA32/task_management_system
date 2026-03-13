@@ -1,4 +1,4 @@
-package task_management_system.com.task_management.controller;
+package task_management_system.com.task_management.controller.task;
 
 import java.io.IOException;
 import java.io.InputStream;
