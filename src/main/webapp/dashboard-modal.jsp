@@ -1,14 +1,65 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<!-- 編集モーダル -->
+<%@ page import="java.util.List"%>
+<%@ page import="task_management_system.com.task_management.dto.TaskDTO"%>
+<%
+TaskDTO editTask = (TaskDTO) request.getAttribute("editTask");
+
+List<Integer> editImageIdList = null;
+int editImageCount = 0;
+String editImageGridClass = "";
+
+if (editTask != null && editTask.getImageIdList() != null) {
+	editImageIdList = editTask.getImageIdList();
+	editImageCount = editImageIdList.size();
+	editImageGridClass = "image-grid-" + (editImageCount >= 4 ? 4 : editImageCount);
+}
+%>
+
 <div class="edit-modal-overlay" id="editModalOverlay">
 	<div class="edit-modal-shell">
-		<form class="note-form expanded" id="editNoteForm">
-			<input type="hidden" id="editTargetId"> <input type="text"
-				id="editNoteTitle" name="title" placeholder="タイトル">
+		<form class="note-form expanded" id="editNoteForm"
+			action="<%=request.getContextPath()%>/task/update"
+			method="post" enctype="multipart/form-data">
+
+			<input type="hidden" name="taskId" id="editTargetId"
+				value="<%=editTask != null ? editTask.getId() : ""%>">
+			<input type="hidden" name="colorId" id="editNoteColorId"
+				value="<%=editTask != null ? editTask.getColorId() : 1%>">
+			<input type="hidden" name="deleteImageIds" id="editDeleteImageIds" value="">
+
+			<!-- 画像エリアは1つだけ -->
+			<div id="editImagePreviewArea"
+				class="image-preview-area <%=editImageCount > 0 ? "" : "hidden"%>">
+				<div id="editImagePreviewList"
+					class="image-preview-list <%=editImageGridClass%>">
+					<%
+					if (editImageCount > 0) {
+						for (Integer imageId : editImageIdList) {
+					%>
+					<div class="image-preview-item existing-image-item"
+						data-image-id="<%=imageId%>" data-image-type="existing">
+						<img
+							src="<%=request.getContextPath()%>/task/image?imageId=<%=imageId%>"
+							alt="タスク画像">
+						<button type="button" class="image-remove-button"
+							data-image-id="<%=imageId%>" data-image-type="existing">×</button>
+					</div>
+					<%
+						}
+					}
+					%>
+				</div>
+			</div>
+
+			<input type="file" id="editNoteImage" name="newImages"
+				accept="image/*" multiple hidden>
+
+			<input type="text" id="editNoteTitle" name="title" placeholder="タイトル"
+				value="<%=editTask != null && editTask.getTitle() != null ? editTask.getTitle() : ""%>">
 
 			<div class="textarea-wrap">
-				<textarea id="editNoteContent" name="content" placeholder="メモを入力..."></textarea>
+				<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
 			</div>
 
 			<div class="form-actions">
@@ -35,7 +86,6 @@
 						aria-label="画像追加">
 						<i class="far fa-image"></i>
 					</button>
-					<input type="file" id="editNoteImage" accept="image/*" hidden>
 
 					<button type="button" class="tool-button" aria-label="アーカイブ">
 						<i class="fas fa-archive"></i>
@@ -45,16 +95,6 @@
 						data-edit-popover="editMorePopover" aria-label="詳細メニュー">
 						<i class="fas fa-ellipsis-v"></i>
 					</button>
-
-					<button type="button" class="tool-button" id="editUndoButton"
-						aria-label="元に戻す">
-						<i class="fas fa-undo"></i>
-					</button>
-
-					<button type="button" class="tool-button" id="editRedoButton"
-						aria-label="やり直す">
-						<i class="fas fa-undo fa-flip-horizontal"></i>
-					</button>
 				</div>
 
 				<div class="action-buttons">
@@ -62,7 +102,6 @@
 				</div>
 
 				<div class="tool-popovers">
-					<!-- 背景色 -->
 					<div class="popover-panel" id="editColorPopover">
 						<div class="color-options">
 							<button type="button" class="color-chip color-default"
@@ -78,7 +117,6 @@
 						</div>
 					</div>
 
-					<!-- メンバー追加 -->
 					<div class="popover-panel" id="editMemberPopover">
 						<div class="mini-form">
 							<input type="text" id="memberNameInput" placeholder="メンバー名を入力">
@@ -87,20 +125,8 @@
 						<div id="memberPreview" class="member-preview"></div>
 					</div>
 
-					<!-- 画像追加 -->
-					<!--						<div class="popover-panel" id="editImagePopover">-->
-					<!--							<button type="button" id="imageSelectButton"-->
-					<!--								class="popover-action">画像を選択</button>-->
-					<!--						</div>-->
-
-					<!-- アーカイブ -->
-					<div class="popover-panel" id="editArchivePopover">
-						<button type="button" id="archiveButton" class="popover-action">アーカイブする</button>
-					</div>
-
-					<!-- 詳細メニュー -->
 					<div class="popover-panel" id="editMorePopover">
-						<button type="button" id="deleteButton"
+						<button type="button" id="editDeleteButton"
 							class="popover-action danger">削除</button>
 					</div>
 				</div>

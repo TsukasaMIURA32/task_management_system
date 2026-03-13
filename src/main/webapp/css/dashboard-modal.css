@@ -21,29 +21,39 @@
   max-width: 600px;
 }
 
-/* モーダル内の textarea だけ少し高めに */
-#editNoteContent {
-  min-height: 120px;
-  line-height: 1.5;
-}
-
 /* 編集モーダルでも色クラスを note-form に当てる */
-#editNoteForm.color-yellow {
+.edit-note-form.color-yellow {
   background-color: #fff8b8;
 }
 
-#editNoteForm.color-blue {
+.edit-note-form.color-blue {
   background-color: #d7ecff;
 }
 
-#editNoteForm.color-green {
+.edit-note-form.color-green {
   background-color: #ddf5d6;
 }
 
-#editNoteForm.color-pink {
+.edit-note-form.color-pink {
   background-color: #ffdce5;
 }
 
-#editNoteForm.color-gray {
+.edit-note-form.color-gray {
   background-color: #eeeeee;
+}
+
+.edit-existing-image-area {
+/*  margin-bottom: 10px;*/
+  padding: 0;
+  background: none;
+}
+
+.image-preview-list {
+  gap: 3px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+}
+
+.image-preview-list .image-preview-item {
+  border-radius: 0;
 }

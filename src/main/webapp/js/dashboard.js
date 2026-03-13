@@ -384,11 +384,11 @@ removeImageButton.addEventListener("click", function () {
 /* -------------------------
    ④ アーカイブ
 ------------------------- */
-archiveButton.addEventListener("click", function () {
-  archived = true;
-  alert("アーカイブしました");
-  closeAllPopovers();
-});
+//archiveButton.addEventListener("click", function () {
+//  archived = true;
+//  alert("アーカイブしました");
+//  closeAllPopovers();
+//});
 
 /* -------------------------
    ⑤ 詳細メニュー → 削除
@@ -502,3 +502,4 @@ redoButton.addEventListener("click", function (e) {
 noteForm.addEventListener("submit", function () {
   syncNoteImageInput();
 });
+

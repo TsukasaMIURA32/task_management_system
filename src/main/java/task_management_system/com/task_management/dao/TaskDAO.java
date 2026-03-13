@@ -96,7 +96,7 @@ public class TaskDAO extends BaseDAO<TaskDTO> {
 				+ "FROM tasks t "
 				+ "LEFT JOIN tasks_users tu ON t.id = tu.task_id "
 				+ "WHERE t.owner_id = ? OR tu.user_id = ? "
-				+ "ORDER BY t.updated_at DESC";
+				+ "ORDER BY t.created_at DESC";
 
 		try (Connection conn = DBCon.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -152,6 +152,89 @@ public class TaskDAO extends BaseDAO<TaskDTO> {
 			pstmt.setBlob(2, imageInputStream);
 
 			result = pstmt.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+	
+	public int deleteTaskImageById(int imageId) {
+		String sql = "DELETE FROM task_images WHERE id = ?";
+		int result = 0;
+
+		try (Connection conn = DBCon.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			pstmt.setInt(1, imageId);
+			result = pstmt.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+	
+	public TaskDTO getTaskById(int taskId) {
+		TaskDTO dto = null;
+
+		String sql = "SELECT * FROM tasks WHERE id = ?";
+
+		try (Connection conn = DBCon.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			pstmt.setInt(1, taskId);
+
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					dto = mapRow(rs);
+
+					List<Integer> imageIdList = getImageIdsByTaskId(conn, dto.getId());
+					dto.setImageIdList(imageIdList);
+					dto.setHasImage(!imageIdList.isEmpty());
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return dto;
+	}
+	
+	@Override
+	public int delete(int taskId) {
+		int result = 0;
+
+		String deleteImagesSql = "DELETE FROM task_images WHERE task_id = ?";
+		String deleteTaskUsersSql = "DELETE FROM tasks_users WHERE task_id = ?";
+		String deleteTaskSql = "DELETE FROM tasks WHERE id = ?";
+
+		try (Connection conn = DBCon.getConnection()) {
+			conn.setAutoCommit(false);
+
+			try (
+				PreparedStatement pstmt1 = conn.prepareStatement(deleteImagesSql);
+				PreparedStatement pstmt2 = conn.prepareStatement(deleteTaskUsersSql);
+				PreparedStatement pstmt3 = conn.prepareStatement(deleteTaskSql)
+			) {
+				pstmt1.setInt(1, taskId);
+				pstmt1.executeUpdate();
+
+				pstmt2.setInt(1, taskId);
+				pstmt2.executeUpdate();
+
+				pstmt3.setInt(1, taskId);
+				result = pstmt3.executeUpdate();
+
+				conn.commit();
+
+			} catch (SQLException e) {
+				conn.rollback();
+				throw e;
+			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
