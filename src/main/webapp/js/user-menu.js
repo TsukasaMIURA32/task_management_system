@@ -87,11 +87,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return false;
       }
 
-      // 表示反映
       nameText.textContent = data.userName;
       emailText.textContent = data.email;
 
-      // inputにも最新値を反映
       nameInput.value = data.userName;
       emailInput.value = data.email;
 
@@ -173,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const withdrawConfirmBox = document.getElementById("withdrawConfirmBox");
   const cancelWithdrawBtn = document.getElementById("cancelWithdrawBtn");
   const confirmWithdrawBtn = document.getElementById("confirmWithdrawBtn");
+  const withdrawForm = document.getElementById("withdrawForm");
 
   if (withdrawBtn) {
     withdrawBtn.addEventListener("click", function () {
@@ -188,18 +187,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const withdrawForm = document.getElementById("withdrawForm");
-  
-  confirmWithdrawBtn.addEventListener("click", function () {
-
-    confirmWithdrawBtn.disabled = true;
-
-    withdrawForm.submit();
-
-  });
-
-  if (confirmWithdrawBtn) {
+  if (confirmWithdrawBtn && withdrawForm) {
     confirmWithdrawBtn.addEventListener("click", function () {
+      confirmWithdrawBtn.disabled = true;
       withdrawForm.submit();
     });
   }
