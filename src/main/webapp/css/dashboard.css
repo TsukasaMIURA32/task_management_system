@@ -674,8 +674,8 @@ body {
 
 .image-preview-area {
 	position: relative;
-	margin-bottom: 12px;
-	padding: 8px;
+/*	margin-bottom: 12px;*/
+/*	padding: 8px;*/
 	border-radius: 12px;
 	background: none;
 }

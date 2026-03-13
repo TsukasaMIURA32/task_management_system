@@ -8,9 +8,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>タスク管理システム</title>
-<link href="css/user-menu.css" rel="stylesheet" type="text/css" />
-<link href="css/dashboard.css" rel="stylesheet" type="text/css" />
-<link href="css/dashboard-modal.css" rel="stylesheet" type="text/css" />
+<link href="<%=request.getContextPath()%>/css/user-menu.css" rel="stylesheet" type="text/css" />
+<link href="<%=request.getContextPath()%>/css/dashboard.css" rel="stylesheet" type="text/css" />
+<link href="<%=request.getContextPath()%>/css/dashboard-modal.css" rel="stylesheet" type="text/css" />
+
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -170,7 +171,7 @@
 
 								<!-- 詳細メニュー -->
 								<div class="popover-panel" id="morePopover">
-									<button type="button" id="deleteEditNote"
+									<button type="button" id="deleteButton"
 										class="popover-action danger">削除</button>
 								</div>
 							</div>
@@ -189,22 +190,22 @@
 
 								String colorClass = "color-default";
 
-								switch (task.getColorId()) {
+							switch (task.getColorId()) {
 								case 2:
-							colorClass = "color-yellow";
-							break;
+									colorClass = "color-yellow";
+									break;
 								case 3:
-							colorClass = "color-blue";
-							break;
+									colorClass = "color-blue";
+									break;
 								case 4:
-							colorClass = "color-green";
-							break;
+									colorClass = "color-green";
+									break;
 								case 5:
-							colorClass = "color-pink";
-							break;
+									colorClass = "color-pink";
+									break;
 								default:
-							colorClass = "color-default";
-							break;
+									colorClass = "color-default";
+									break;
 								}
 						%>
 						<article class="note-card <%=colorClass%>"
@@ -260,13 +261,21 @@
 					</div>
 				</section>
 			</div>
+			
+<!--			<form id="taskDetailForm" action="<%=request.getContextPath()%>/task/detail" method="get">-->
+<!--				<input type="hidden" name="taskId" id="detailTaskId">-->
+<!--			</form>-->
 		</main>
 
 		<jsp:include page="dashboard-modal.jsp" />
 
 	</div>
-	<script src="js/dashboard.js"></script>
-	<script src="js/user-menu.js"></script>
-	<script src="js/dashboard-modal.js"></script>
+	
+<script>
+  window.contextPath = '<%=request.getContextPath()%>';
+</script>
+<script src="<%=request.getContextPath()%>/js/dashboard.js"></script>
+<script src="<%=request.getContextPath()%>/js/user-menu.js"></script>
+<script src="<%=request.getContextPath()%>/js/dashboard-modal.js"></script>
 </body>
 </html>

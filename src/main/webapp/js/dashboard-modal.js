@@ -1,31 +1,24 @@
-/* =========================
-   編集モーダル
-========================= */
+const editModalOverlay = document.getElementById("editModalOverlay");
+const editNoteForm = document.getElementById("editNoteForm");
+const editTargetId = document.getElementById("editTargetId");
+const editNoteTitle = document.getElementById("editNoteTitle");
+const editNoteContent = document.getElementById("editNoteContent");
+const closeEditModal = document.getElementById("closeEditModal");
 
-var editModalOverlay = document.getElementById("editModalOverlay");
-var editNoteForm = document.getElementById("editNoteForm");
-var editTargetId = document.getElementById("editTargetId");
-var editNoteTitle = document.getElementById("editNoteTitle");
-var editNoteContent = document.getElementById("editNoteContent");
-var closeEditModal = document.getElementById("closeEditModal");
-var deleteEditNote = document.getElementById("deleteEditNote");
+const editImageButton = document.getElementById("editImageButton");
+const editNoteImage = document.getElementById("editNoteImage");
+const editNoteColorId = document.getElementById("editNoteColorId");
+const editDeleteImageIds = document.getElementById("editDeleteImageIds");
 
-var editMemberNameInput = document.getElementById("editMemberNameInput");
-var editAddMemberButton = document.getElementById("editAddMemberButton");
-var editMemberPreview = document.getElementById("editMemberPreview");
+const editImagePreviewArea = document.getElementById("editImagePreviewArea");
+const editImagePreviewList = document.getElementById("editImagePreviewList");
 
-var editImageButton = document.getElementById("editImageButton");
-var editNoteImage = document.getElementById("editNoteImage");
+const editDeleteButton = document.getElementById("editDeleteButton");
 
-var editUndoButton = document.getElementById("editUndoButton");
-var editRedoButton = document.getElementById("editRedoButton");
+const noteCards = document.querySelectorAll(".note-card");
 
-var noteCards = document.querySelectorAll(".note-card");
+let selectedNewFiles = [];
 
-var deletedEditDraft = null;
-var editArchived = false;
-
-/* ガード */
 if (
   editModalOverlay &&
   editNoteForm &&
@@ -33,315 +26,389 @@ if (
   editNoteTitle &&
   editNoteContent
 ) {
-  var editPopoverButtons = editNoteForm.querySelectorAll("[data-edit-popover]");
-  var editColorChips = editNoteForm.querySelectorAll("[data-edit-color]");
-  var editPopovers = editNoteForm.querySelectorAll(".popover-panel");
+  const editPopoverButtons = editNoteForm.querySelectorAll("[data-edit-popover]");
+  const editColorChips = editNoteForm.querySelectorAll("[data-edit-color]");
+  const editPopovers = editNoteForm.querySelectorAll(".popover-panel");
 
-  var NOTE_COLOR_CLASSES = [
+  const NOTE_COLOR_CLASSES = [
     "color-yellow",
     "color-blue",
     "color-green",
     "color-pink"
   ];
 
-  function clearEditFormColors() {
-    var i;
-    for (i = 0; i < NOTE_COLOR_CLASSES.length; i++) {
-      editNoteForm.classList.remove(NOTE_COLOR_CLASSES[i]);
-    }
-  }
+  const clearEditFormColors = () => {
+    NOTE_COLOR_CLASSES.forEach((colorClass) => {
+      editNoteForm.classList.remove(colorClass);
+    });
+  };
 
-  function setEditFormColor(colorClass) {
+  const setEditFormColor = (colorClass) => {
     clearEditFormColors();
-
     if (colorClass) {
-      var i;
-      for (i = 0; i < NOTE_COLOR_CLASSES.length; i++) {
-        if (NOTE_COLOR_CLASSES[i] === colorClass) {
-          editNoteForm.classList.add(colorClass);
-          break;
-        }
-      }
+      editNoteForm.classList.add(colorClass);
     }
-  }
+  };
 
-  function clearEditChipActive() {
-    var i;
-    for (i = 0; i < editColorChips.length; i++) {
-      editColorChips[i].classList.remove("active");
-    }
-  }
+  const clearEditChipActive = () => {
+    editColorChips.forEach((chip) => chip.classList.remove("active"));
+  };
 
-  function setActiveEditChipByColor(colorClass) {
-    var selector;
-    var targetChip;
-
+  const setActiveEditChipByColor = (colorClass) => {
     clearEditChipActive();
 
-    if (colorClass) {
-      selector = '[data-edit-color="' + colorClass + '"]';
-    } else {
-      selector = '[data-edit-color=""]';
-    }
+    const selector = colorClass
+      ? `[data-edit-color="${colorClass}"]`
+      : `[data-edit-color=""]`;
 
-    targetChip = editNoteForm.querySelector(selector);
+    const targetChip = editNoteForm.querySelector(selector);
 
     if (targetChip) {
       targetChip.classList.add("active");
     }
-  }
+  };
 
-  function getCardColorClass(card) {
-    var i;
-    for (i = 0; i < NOTE_COLOR_CLASSES.length; i++) {
-      if (card.classList.contains(NOTE_COLOR_CLASSES[i])) {
-        return NOTE_COLOR_CLASSES[i];
-      }
+  const getColorClassByColorId = (colorId) => {
+    switch (Number(colorId)) {
+      case 2:
+        return "color-yellow";
+      case 3:
+        return "color-blue";
+      case 4:
+        return "color-green";
+      case 5:
+        return "color-pink";
+      default:
+        return "";
     }
-    return "";
-  }
+  };
 
-  function closeEditPopovers() {
-    var i;
-    for (i = 0; i < editPopovers.length; i++) {
-      editPopovers[i].classList.remove("show");
-      editPopovers[i].style.left = "";
-      editPopovers[i].style.top = "";
+  const getColorIdByColorClass = (colorClass) => {
+    switch (colorClass) {
+      case "color-yellow":
+        return 2;
+      case "color-blue":
+        return 3;
+      case "color-green":
+        return 4;
+      case "color-pink":
+        return 5;
+      default:
+        return 1;
     }
-  }
+  };
 
-  function openEditModal(card) {
-    var noteId, title, content, colorClass;
-    var titleElement, contentElement;
+  const closeEditPopovers = () => {
+    editPopovers.forEach((popover) => {
+      popover.classList.remove("show");
+      popover.style.left = "";
+      popover.style.top = "";
+    });
+  };
 
-    if (!card) {
+  const closeEditModalFn = () => {
+    closeEditPopovers();
+    editModalOverlay.classList.remove("show");
+  };
+
+  const addDeleteImageId = (imageId) => {
+    if (!editDeleteImageIds) return;
+
+    const currentIds = editDeleteImageIds.value
+      ? editDeleteImageIds.value.split(",").filter((id) => id !== "")
+      : [];
+
+    if (!currentIds.includes(String(imageId))) {
+      currentIds.push(String(imageId));
+      editDeleteImageIds.value = currentIds.join(",");
+    }
+  };
+
+  const getAllPreviewItems = () => {
+    return Array.from(editImagePreviewList.querySelectorAll(".image-preview-item"));
+  };
+
+  const updatePreviewGridClass = () => {
+    if (!editImagePreviewArea || !editImagePreviewList) return;
+
+    const items = getAllPreviewItems();
+    editImagePreviewList.className = "image-preview-list";
+
+    if (items.length === 0) {
+      editImagePreviewArea.classList.add("hidden");
       return;
     }
 
-    noteId = card.getAttribute("data-note-id") || "";
+    const gridClass = `image-grid-${items.length >= 4 ? 4 : items.length}`;
+    editImagePreviewList.classList.add(gridClass);
+    editImagePreviewArea.classList.remove("hidden");
+  };
 
-    titleElement = card.querySelector("h3");
-    contentElement = card.querySelector("p");
+  const bindPreviewRemoveEvents = () => {
+    const removeButtons = editImagePreviewList.querySelectorAll(".image-remove-button");
 
-    title = titleElement ? titleElement.textContent : "";
-    content = contentElement ? contentElement.textContent : "";
-    colorClass = getCardColorClass(card);
+    removeButtons.forEach((button) => {
+      button.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    editTargetId.value = noteId;
-    editNoteTitle.value = title;
-    editNoteContent.value = content;
+        const imageType = button.getAttribute("data-image-type");
+        const imageItem = button.closest(".image-preview-item");
 
-    setEditFormColor(colorClass);
-    setActiveEditChipByColor(colorClass);
+        if (!imageItem) return;
 
-    closeEditPopovers();
-    editModalOverlay.classList.add("show");
-  }
+        if (imageType === "existing") {
+          const imageId = button.getAttribute("data-image-id");
+          if (imageId) {
+            addDeleteImageId(imageId);
+          }
+          imageItem.remove();
+        }
 
-  function closeEditModalFn() {
-    closeEditPopovers();
-    editModalOverlay.classList.remove("show");
-  }
+        if (imageType === "new") {
+          const newIndex = Number(button.getAttribute("data-new-index"));
+          selectedNewFiles = selectedNewFiles.filter((_, index) => index !== newIndex);
+          syncFileInputFromSelectedFiles();
+          renderUnifiedPreview();
+          return;
+        }
 
-  /* -------------------------
-     カードクリックで開く
-  ------------------------- */
-  var i;
-  for (i = 0; i < noteCards.length; i++) {
-    noteCards[i].addEventListener("click", function () {
-      openEditModal(this);
+        updatePreviewGridClass();
+      };
     });
-  }
+  };
 
-  /* -------------------------
-     モーダルを閉じる
-  ------------------------- */
+  const syncFileInputFromSelectedFiles = () => {
+    if (!editNoteImage) return;
+
+    const dataTransfer = new DataTransfer();
+    selectedNewFiles.forEach((file) => dataTransfer.items.add(file));
+    editNoteImage.files = dataTransfer.files;
+  };
+
+  const renderUnifiedPreview = (existingImageIdList = null) => {
+    if (!editImagePreviewArea || !editImagePreviewList) return;
+
+    editImagePreviewList.innerHTML = "";
+
+    if (existingImageIdList !== null) {
+      existingImageIdList.forEach((imageId) => {
+        const item = document.createElement("div");
+        item.className = "image-preview-item existing-image-item";
+        item.dataset.imageId = imageId;
+        item.dataset.imageType = "existing";
+
+        item.innerHTML = `
+          <img src="${window.contextPath}/task/image?imageId=${imageId}" alt="タスク画像">
+          <button type="button" class="image-remove-button"
+            data-image-id="${imageId}" data-image-type="existing">×</button>
+        `;
+
+        editImagePreviewList.appendChild(item);
+      });
+    }
+
+    selectedNewFiles.forEach((file, index) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const item = document.createElement("div");
+        item.className = "image-preview-item new-image-item";
+        item.dataset.imageType = "new";
+        item.dataset.newIndex = index;
+
+        item.innerHTML = `
+          <img src="${e.target.result}" alt="新規画像">
+          <button type="button" class="image-remove-button"
+            data-image-type="new" data-new-index="${index}">×</button>
+        `;
+
+        editImagePreviewList.appendChild(item);
+        updatePreviewGridClass();
+        bindPreviewRemoveEvents();
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    updatePreviewGridClass();
+    bindPreviewRemoveEvents();
+  };
+
+  const openEditModalByAjax = (taskId) => {
+    fetch(`${window.contextPath}/task/detail?taskId=${encodeURIComponent(taskId)}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("タスク詳細の取得に失敗しました");
+        }
+        return response.json();
+      })
+      .then((task) => {
+        editTargetId.value = task.id || "";
+        editNoteTitle.value = task.title || "";
+        editNoteContent.value = task.content || "";
+
+        if (editNoteColorId) {
+          editNoteColorId.value = task.colorId || 1;
+        }
+
+        if (editDeleteImageIds) {
+          editDeleteImageIds.value = "";
+        }
+
+        selectedNewFiles = [];
+        if (editNoteImage) {
+          editNoteImage.value = "";
+        }
+
+        const colorClass = getColorClassByColorId(task.colorId);
+        setEditFormColor(colorClass);
+        setActiveEditChipByColor(colorClass);
+
+        renderUnifiedPreview(task.imageIdList || []);
+
+        closeEditPopovers();
+        editModalOverlay.classList.add("show");
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("タスク詳細の取得に失敗しました。");
+      });
+  };
+
+  noteCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const noteId = card.getAttribute("data-note-id");
+      if (!noteId) return;
+
+      openEditModalByAjax(noteId);
+    });
+  });
+
   if (closeEditModal) {
-    closeEditModal.addEventListener("click", function (e) {
+    closeEditModal.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      closeEditModalFn();
+      editNoteForm.submit();
     });
   }
 
-  /* オーバーレイ部分クリックで閉じる */
-  editModalOverlay.addEventListener("click", function (e) {
+  editModalOverlay.addEventListener("click", (e) => {
     if (e.target === editModalOverlay) {
       closeEditModalFn();
     }
   });
+  
+  if (editDeleteButton) {
+    editDeleteButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  /* フォーム内部クリックでは閉じない */
-  editNoteForm.addEventListener("click", function (e) {
+      const taskId = editTargetId.value;
+      if (!taskId) return;
+
+      const result = confirm("このタスクを削除しますか？");
+      if (!result) return;
+
+      const form = document.createElement("form");
+      form.method = "post";
+      form.action = `${window.contextPath}/task/delete`;
+
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "taskId";
+      input.value = taskId;
+
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+
+  editNoteForm.addEventListener("click", (e) => {
     e.stopPropagation();
   });
 
-  /* -------------------------
-     モーダル内ポップオーバー
-  ------------------------- */
-  for (i = 0; i < editPopoverButtons.length; i++) {
-    editPopoverButtons[i].addEventListener("click", function (e) {
-      var targetId;
-      var targetPopover;
-      var alreadyOpen;
-      var buttonRect;
-      var formRect;
-      var left;
-      var top;
-
+  editPopoverButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      targetId = this.getAttribute("data-edit-popover");
-      if (!targetId) {
-        return;
-      }
+      const targetId = button.getAttribute("data-edit-popover");
+      if (!targetId) return;
 
-      targetPopover = document.getElementById(targetId);
-      if (!targetPopover) {
-        return;
-      }
+      const targetPopover = document.getElementById(targetId);
+      if (!targetPopover) return;
 
-      alreadyOpen = targetPopover.classList.contains("show");
+      const alreadyOpen = targetPopover.classList.contains("show");
       closeEditPopovers();
 
       if (!alreadyOpen) {
-        buttonRect = this.getBoundingClientRect();
-        formRect = editNoteForm.getBoundingClientRect();
+        const buttonRect = button.getBoundingClientRect();
+        const formRect = editNoteForm.getBoundingClientRect();
 
-        left = buttonRect.left - formRect.left;
-        top = buttonRect.bottom - formRect.top + 8;
+        const left = buttonRect.left - formRect.left;
+        const top = buttonRect.bottom - formRect.top + 8;
 
-        targetPopover.style.left = left + "px";
-        targetPopover.style.top = top + "px";
+        targetPopover.style.left = `${left}px`;
+        targetPopover.style.top = `${top}px`;
         targetPopover.classList.add("show");
       }
     });
-  }
+  });
 
-  for (i = 0; i < editPopovers.length; i++) {
-    editPopovers[i].addEventListener("click", function (e) {
+  editPopovers.forEach((popover) => {
+    popover.addEventListener("click", (e) => {
       e.stopPropagation();
     });
-  }
+  });
 
-  /* -------------------------
-     色選択
-  ------------------------- */
-  for (i = 0; i < editColorChips.length; i++) {
-    editColorChips[i].addEventListener("click", function (e) {
-      var colorClass;
-
+  editColorChips.forEach((chip) => {
+    chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      colorClass = this.getAttribute("data-edit-color") || "";
+      const colorClass = chip.getAttribute("data-edit-color") || "";
+      const colorId = getColorIdByColorClass(colorClass);
+
+      if (editNoteColorId) {
+        editNoteColorId.value = colorId;
+      }
 
       setActiveEditChipByColor(colorClass);
       setEditFormColor(colorClass);
       closeEditPopovers();
     });
-  }
+  });
 
-  /* -------------------------
-     画像ボタン
-  ------------------------- */
   if (editImageButton && editNoteImage) {
-    editImageButton.addEventListener("click", function (e) {
+    editImageButton.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
       closeEditPopovers();
       editNoteImage.click();
     });
-  }
 
-  /* -------------------------
-     保存
-  ------------------------- */
-  editNoteForm.addEventListener("submit", function (e) {
-    var noteId;
-    var targetCard;
-    var titleEl;
-    var contentEl;
-    var selectedColorClass;
-    var j;
+    editNoteImage.addEventListener("change", () => {
+      const newFiles = Array.from(editNoteImage.files || []);
+      selectedNewFiles = [...selectedNewFiles, ...newFiles];
+      syncFileInputFromSelectedFiles();
 
-    e.preventDefault();
+      const existingItems = Array.from(
+        editImagePreviewList.querySelectorAll('.existing-image-item')
+      ).map((item) => item.dataset.imageId);
 
-    noteId = editTargetId.value;
-    targetCard = document.querySelector('.note-card[data-note-id="' + noteId + '"]');
-
-    if (!targetCard) {
-      return;
-    }
-
-    titleEl = targetCard.querySelector("h3");
-    contentEl = targetCard.querySelector("p");
-
-    if (titleEl) {
-      titleEl.textContent = editNoteTitle.value.replace(/^\s+|\s+$/g, "");
-    }
-
-    if (contentEl) {
-      contentEl.textContent = editNoteContent.value.replace(/^\s+|\s+$/g, "");
-    }
-
-    for (j = 0; j < NOTE_COLOR_CLASSES.length; j++) {
-      targetCard.classList.remove(NOTE_COLOR_CLASSES[j]);
-    }
-
-    selectedColorClass = "";
-    for (j = 0; j < NOTE_COLOR_CLASSES.length; j++) {
-      if (editNoteForm.classList.contains(NOTE_COLOR_CLASSES[j])) {
-        selectedColorClass = NOTE_COLOR_CLASSES[j];
-        break;
-      }
-    }
-
-    if (selectedColorClass !== "") {
-      targetCard.classList.add(selectedColorClass);
-    }
-
-    closeEditModalFn();
-  });
-
-  /* -------------------------
-     削除
-  ------------------------- */
-  if (deleteEditNote) {
-    deleteEditNote.addEventListener("click", function (e) {
-      var noteId;
-      var targetCard;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      noteId = editTargetId.value;
-      targetCard = document.querySelector('.note-card[data-note-id="' + noteId + '"]');
-
-      if (!targetCard) {
-        return;
-      }
-
-      targetCard.parentNode.removeChild(targetCard);
-      closeEditModalFn();
+      renderUnifiedPreview(existingItems);
     });
   }
 
-  /* -------------------------
-     Escキーで閉じる
-  ------------------------- */
-  document.addEventListener("keydown", function (e) {
+  document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && editModalOverlay.classList.contains("show")) {
       closeEditModalFn();
     }
   });
 
-  /* -------------------------
-     モーダル内以外クリックで
-     ポップオーバーだけ閉じる
-  ------------------------- */
-  document.addEventListener("click", function () {
+  document.addEventListener("click", () => {
     if (editModalOverlay.classList.contains("show")) {
       closeEditPopovers();
     }
