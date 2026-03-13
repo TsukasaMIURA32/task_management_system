@@ -19,28 +19,23 @@ public class UserDAO extends BaseDAO<UserDTO> {
     protected UserDTO mapRow(ResultSet rs) throws SQLException {
         UserDTO user = new UserDTO();
 
-        user.setId(rs.getInt("id"));
+        user.setUserId(rs.getInt("id"));
         user.setUserName(rs.getString("name"));
         user.setEmail(rs.getString("email"));
         user.setPassword(rs.getString("password"));
 
-        // UserDTO の role →String 
         int roleValue = rs.getInt("role");
         if (roleValue == 0) {
             user.setRole("user");
         } else if (roleValue == 1) {
-            user.setRole("approved_admin");
-        } else if (roleValue == 2) {
             user.setRole("admin");
+        } else if (roleValue == 2) {
+            user.setRole("pending_admin");
         }
 
         return user;
     }
 
-    /**
-     * BaseDAO の抽象メソッド実装
-     * 戻り値は「登録件数」
-     */
     @Override
     public int insert(UserDTO user) {
         String sql = "INSERT INTO users (name, email, password, role, created_at, updated_at) "
@@ -51,13 +46,11 @@ public class UserDAO extends BaseDAO<UserDTO> {
 
             int roleValue = 0;
 
-            // 一般ユーザー
             if ("user".equals(user.getRole())) {
                 roleValue = 0;
-            }
-
-            // 管理ユーザー申請 → 承認待ち
-            if ("admin".equals(user.getRole())) {
+            } else if ("admin".equals(user.getRole())) {
+                roleValue = 1;
+            } else if ("pending_admin".equals(user.getRole())) {
                 roleValue = 2;
             }
 
@@ -76,19 +69,12 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return 0;
     }
 
-    /**
-     * 今までの insertUser を残したい場合のラッパー
-     */
     public boolean insertUser(UserDTO user) {
         return insert(user) > 0;
     }
 
-    /**
-     * BaseDAO の抽象メソッド実装
-     * 今回は「ユーザー情報全体の更新」として用意
-     */
     @Override
-    protected int update(UserDTO user) {
+	public int update(UserDTO user) {
         String sql = "UPDATE users SET name = ?, email = ?, password = ?, role = ?, updated_at = NOW() "
                    + "WHERE id = ?";
 
@@ -99,9 +85,9 @@ public class UserDAO extends BaseDAO<UserDTO> {
 
             if ("user".equals(user.getRole())) {
                 roleValue = 0;
-            }
-
-            if ("admin".equals(user.getRole())) {
+            } else if ("admin".equals(user.getRole())) {
+                roleValue = 1;
+            } else if ("pending_admin".equals(user.getRole())) {
                 roleValue = 2;
             }
 
@@ -109,7 +95,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
             ps.setInt(4, roleValue);
-            ps.setInt(5, user.getId());
+            ps.setInt(5, user.getUserId());
 
             return ps.executeUpdate();
 
@@ -121,7 +107,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return 0;
     }
 
-    // メールアドレス重複チェック
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
 
@@ -144,7 +129,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return false;
     }
 
-    // メールアドレスでユーザー取得
     public UserDTO findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
 
@@ -167,7 +151,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return null;
     }
 
-    // ログイン用
     public UserDTO login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
@@ -191,7 +174,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return null;
     }
 
-    // パスワード再設定
     public boolean updatePasswordByEmail(String email, String newPassword) {
         String sql = "UPDATE users SET password = ?, updated_at = NOW() WHERE email = ?";
 

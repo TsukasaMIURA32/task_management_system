@@ -12,22 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
 
-
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-
-    public RegisterServlet() {
-        super();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/register.jsp");
-        dispatcher.forward(request, response);
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -38,54 +25,51 @@ public class RegisterServlet extends HttpServlet {
         String userName = request.getParameter("userName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        String role = request.getParameter("role");
+        String roleParam = request.getParameter("role");
 
-        // 未入力チェック
-        if (userName == null || userName.isEmpty()
-                || email == null || email.isEmpty()
-                || password == null || password.isEmpty()
-                || role == null || role.isEmpty()) {
+        // 入力チェック
+        if (userName == null || userName.isEmpty() ||
+            email == null || email.isEmpty() ||
+            password == null || password.isEmpty()) {
 
-            request.setAttribute("error", "未入力の項目があります。");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/register.jsp");
-            dispatcher.forward(request, response);
-            return;
-        }
-
-        // roleの値チェック
-        if (!"user".equals(role) && !"admin".equals(role)) {
-            request.setAttribute("error", "ユーザー種別が不正です。");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/register.jsp");
-            dispatcher.forward(request, response);
+            request.setAttribute("error", "すべての項目を入力してください。");
+            RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
+            rd.forward(request, response);
             return;
         }
 
         UserDAO userDAO = new UserDAO();
 
-        // メールアドレス重複チェック
+        // メール重複チェック
         if (userDAO.existsByEmail(email)) {
-            request.setAttribute("error", "そのメールアドレスは既に登録されています。");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/register.jsp");
-            dispatcher.forward(request, response);
+            request.setAttribute("error", "このメールアドレスは既に登録されています。");
+            RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
+            rd.forward(request, response);
             return;
         }
 
-        // DTOにセット
+        // DTO作成
         UserDTO user = new UserDTO();
         user.setUserName(userName);
         user.setEmail(email);
         user.setPassword(password);
-        user.setRole(role);
+
+        // ユーザー権限チェック
+        if ("user".equals(roleParam)) {
+            user.setRole("user");
+        } else if ("admin".equals(roleParam)) {
+            user.setRole("pending_admin");
+        }
 
         // DB登録
         boolean result = userDAO.insertUser(user);
 
         if (result) {
-            response.sendRedirect("registerComplete.jsp");
+            response.sendRedirect(request.getContextPath() + "/registerComplete.jsp");
         } else {
-            request.setAttribute("error", "ユーザー登録に失敗しました。");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/register.jsp");
-            dispatcher.forward(request, response);
+            request.setAttribute("error", "登録に失敗しました。");
+            RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
+            rd.forward(request, response);
         }
     }
 }

@@ -22,10 +22,11 @@
         }
         %>
 
-        <form action="login" method="post">
+        <form action="<%= request.getContextPath() %>/login" method="post">
+
             <div class="form-group">
-                <label for="userId">メールアドレス</label>
-                <input type="text" id="userId" name="userId" placeholder="example@email.com" required>
+                <label for="email">メールアドレス</label>
+                <input type="email" id="email" name="email" placeholder="example@email.com" required>
             </div>
 
             <div class="form-group">
@@ -36,12 +37,14 @@
             <div class="form-group">
                 <button type="submit" class="btn-primary">ログイン</button>
             </div>
+
         </form>
 
         <div class="auth-links">
             <p><a href="register.jsp">アカウント作成</a></p>
             <p><a href="resetPassword.jsp">パスワードを忘れた方</a></p>
         </div>
+
     </div>
 </div>
 
