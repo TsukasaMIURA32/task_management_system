@@ -12,7 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.TaskDAO;
+import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
+import task_management_system.com.task_management.dto.UserDTO;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
@@ -26,7 +28,7 @@ public class DashboardServlet extends HttpServlet {
 
 		// 仮ログイン用（あとで削除）
 		if (session.getAttribute("loginUserId") == null) {
-			session.setAttribute("loginUserId", 1);
+			session.setAttribute("loginUserId",1);
 		}
 
 		Integer loginUserId = (Integer) session.getAttribute("loginUserId");
@@ -35,6 +37,11 @@ public class DashboardServlet extends HttpServlet {
 			response.sendRedirect("login.jsp");
 			return;
 		}
+		
+		UserDAO userDAO = new UserDAO();
+		UserDTO loginUser = userDAO.getById(loginUserId);
+
+		request.setAttribute("loginUser", loginUser);
 
 		TaskDAO dao = new TaskDAO();
 		List<TaskDTO> taskList = dao.getTasksByUserId(loginUserId);

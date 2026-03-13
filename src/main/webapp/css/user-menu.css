@@ -14,7 +14,7 @@
   border: 1px solid #d0d5db;
   border-radius: 32px;
   box-shadow: 0 8px 24px rgba(60, 64, 67, 0.3);
-  padding: 22px 20px 26px;
+  padding: 26px 20px;
   display: none;
   z-index: 2000;
 }
@@ -151,9 +151,6 @@
   gap: 16px;
 }
 
-.link-icon-edit i{
-	color: #fbbc04 !important;
-}
 
 .account-circle {
   width: 40px;
@@ -279,6 +276,14 @@
 
 .user-menu-greeting-wrap {
 	align-items: center;
+}
+
+.logout-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
 }
 
 /* ===============================

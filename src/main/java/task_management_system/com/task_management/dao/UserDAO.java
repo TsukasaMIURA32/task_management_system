@@ -73,29 +73,24 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return insert(user) > 0;
     }
 
+
+    /**
+     * BaseDAO の抽象メソッド実装
+     * ユーザーメニューから
+     * 名前・メールアドレスの更新を行う
+     */
+
     @Override
 	public int update(UserDTO user) {
-        String sql = "UPDATE users SET name = ?, email = ?, password = ?, role = ?, updated_at = NOW() "
-                   + "WHERE id = ?";
+        String sql = "UPDATE users SET name = ?, email = ?, updated_at = NOW() WHERE id = ?";
 
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            int roleValue = 0;
-
-            if ("user".equals(user.getRole())) {
-                roleValue = 0;
-            } else if ("admin".equals(user.getRole())) {
-                roleValue = 1;
-            } else if ("pending_admin".equals(user.getRole())) {
-                roleValue = 2;
-            }
 
             ps.setString(1, user.getUserName());
             ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
-            ps.setInt(4, roleValue);
-            ps.setInt(5, user.getUserId());
+            ps.setInt(3, user.getId());
 
             return ps.executeUpdate();
 

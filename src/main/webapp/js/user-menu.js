@@ -26,11 +26,11 @@ if (userMenuButton && userMenuPopover) {
     userMenuPopover.classList.remove("show");
   });
 }
+
 /* -------------------------
    編集
 ------------------------- */
 document.addEventListener("DOMContentLoaded", function () {
-
   // ===== メール編集 =====
   const emailDisplay = document.getElementById("emailDisplay");
   const emailEdit = document.getElementById("emailEdit");
@@ -40,39 +40,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const editEmailBtn = document.getElementById("editEmailBtn");
   const saveEmailBtn = document.getElementById("saveEmailBtn");
   const cancelEmailBtn = document.getElementById("cancelEmailBtn");
-
-  if (editEmailBtn) {
-    editEmailBtn.addEventListener("click", function () {
-      emailDisplay.classList.add("hidden");
-      emailEdit.classList.remove("hidden");
-      emailInput.focus();
-      emailInput.select();
-    });
-  }
-
-  if (saveEmailBtn) {
-    saveEmailBtn.addEventListener("click", function () {
-      const newEmail = emailInput.value.trim();
-
-      if (newEmail === "") {
-        alert("メールアドレスを入力してください。");
-        return;
-      }
-
-      emailText.textContent = newEmail;
-      emailEdit.classList.add("hidden");
-      emailDisplay.classList.remove("hidden");
-    });
-  }
-
-  if (cancelEmailBtn) {
-    cancelEmailBtn.addEventListener("click", function () {
-      emailInput.value = emailText.textContent;
-      emailEdit.classList.add("hidden");
-      emailDisplay.classList.remove("hidden");
-    });
-  }
-
 
   // ===== 名前編集 =====
   const nameDisplay = document.getElementById("nameDisplay");
@@ -84,6 +51,90 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveNameBtn = document.getElementById("saveNameBtn");
   const cancelNameBtn = document.getElementById("cancelNameBtn");
 
+  /* -------------------------
+     共通：プロフィール更新
+  ------------------------- */
+  async function updateUserProfile() {
+    const newName = nameInput.value.trim();
+    const newEmail = emailInput.value.trim();
+
+    if (newName === "") {
+      alert("名前を入力してください。");
+      return false;
+    }
+
+    if (newEmail === "") {
+      alert("メールアドレスを入力してください。");
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${window.contextPath}/user/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
+        body: new URLSearchParams({
+          userName: newName,
+          email: newEmail
+        }).toString()
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        alert(data.message || "更新に失敗しました。");
+        return false;
+      }
+
+      nameText.textContent = data.userName;
+      emailText.textContent = data.email;
+
+      nameInput.value = data.userName;
+      emailInput.value = data.email;
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      alert("更新中にエラーが発生しました。");
+      return false;
+    }
+  }
+
+  /* -------------------------
+     メール編集
+  ------------------------- */
+  if (editEmailBtn) {
+    editEmailBtn.addEventListener("click", function () {
+      emailDisplay.classList.add("hidden");
+      emailEdit.classList.remove("hidden");
+      emailInput.focus();
+      emailInput.select();
+    });
+  }
+
+  if (saveEmailBtn) {
+    saveEmailBtn.addEventListener("click", async function () {
+      const result = await updateUserProfile();
+
+      if (result) {
+        emailEdit.classList.add("hidden");
+        emailDisplay.classList.remove("hidden");
+      }
+    });
+  }
+
+  if (cancelEmailBtn) {
+    cancelEmailBtn.addEventListener("click", function () {
+      emailInput.value = emailText.textContent;
+      emailEdit.classList.add("hidden");
+      emailDisplay.classList.remove("hidden");
+    });
+  }
+
+  /* -------------------------
+     名前編集
+  ------------------------- */
   if (editNameBtn) {
     editNameBtn.addEventListener("click", function () {
       nameDisplay.classList.add("hidden");
@@ -94,17 +145,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (saveNameBtn) {
-    saveNameBtn.addEventListener("click", function () {
-      const newName = nameInput.value.trim();
+    saveNameBtn.addEventListener("click", async function () {
+      const result = await updateUserProfile();
 
-      if (newName === "") {
-        alert("名前を入力してください。");
-        return;
+      if (result) {
+        nameEdit.classList.add("hidden");
+        nameDisplay.classList.remove("hidden");
       }
-
-      nameText.textContent = newName;
-      nameEdit.classList.add("hidden");
-      nameDisplay.classList.remove("hidden");
     });
   }
 
@@ -115,34 +162,35 @@ document.addEventListener("DOMContentLoaded", function () {
       nameDisplay.classList.remove("hidden");
     });
   }
-  // ===== 退会 =====
+
+  /* -------------------------
+     退会
+  ------------------------- */
   const withdrawBtn = document.getElementById("withdrawBtn");
-  	const accountMenuDefault = document.getElementById("accountMenuDefault");
-  	const withdrawConfirmBox = document.getElementById("withdrawConfirmBox");
-  	const cancelWithdrawBtn = document.getElementById("cancelWithdrawBtn");
-  	const confirmWithdrawBtn = document.getElementById("confirmWithdrawBtn");
+  const accountMenuDefault = document.getElementById("accountMenuDefault");
+  const withdrawConfirmBox = document.getElementById("withdrawConfirmBox");
+  const cancelWithdrawBtn = document.getElementById("cancelWithdrawBtn");
+  const confirmWithdrawBtn = document.getElementById("confirmWithdrawBtn");
+  const withdrawForm = document.getElementById("withdrawForm");
 
-  	if (withdrawBtn) {
-  		withdrawBtn.addEventListener("click", function () {
-  			accountMenuDefault.classList.add("hidden");
-  			withdrawConfirmBox.classList.remove("hidden");
-  		});
-  	}
+  if (withdrawBtn) {
+    withdrawBtn.addEventListener("click", function () {
+      accountMenuDefault.classList.add("hidden");
+      withdrawConfirmBox.classList.remove("hidden");
+    });
+  }
 
-  	if (cancelWithdrawBtn) {
-  		cancelWithdrawBtn.addEventListener("click", function () {
-  			withdrawConfirmBox.classList.add("hidden");
-  			accountMenuDefault.classList.remove("hidden");
-  		});
-  	}
+  if (cancelWithdrawBtn) {
+    cancelWithdrawBtn.addEventListener("click", function () {
+      withdrawConfirmBox.classList.add("hidden");
+      accountMenuDefault.classList.remove("hidden");
+    });
+  }
 
-  	if (confirmWithdrawBtn) {
-  		confirmWithdrawBtn.addEventListener("click", function () {
-  			alert("退会処理を実行します");
-  			// ここに退会用の送信処理を書く
-  			// 例: location.href = "WithdrawServlet";
-  		});
-  	}
-
+  if (confirmWithdrawBtn && withdrawForm) {
+    confirmWithdrawBtn.addEventListener("click", function () {
+      confirmWithdrawBtn.disabled = true;
+      withdrawForm.submit();
+    });
+  }
 });
-

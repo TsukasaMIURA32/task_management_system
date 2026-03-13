@@ -1,4 +1,4 @@
-package task_management_system.com.task_management.controller;
+package task_management_system.com.task_management.controller.task;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,6 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.TaskDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
@@ -38,6 +39,14 @@ public class TaskDetailServlet extends HttpServlet {
 			return;
 		}
 
+		HttpSession session = request.getSession(false);
+		Integer loginUserId = null;
+		if (session != null) {
+		    loginUserId = (Integer) session.getAttribute("loginUserId");
+		}
+
+		boolean isOwner = loginUserId != null && task.getOwnerId() == loginUserId;
+		
 		response.setContentType("application/json; charset=UTF-8");
 		response.setCharacterEncoding("UTF-8");
 
@@ -48,6 +57,7 @@ public class TaskDetailServlet extends HttpServlet {
 		out.print("\"title\":\"" + escapeJson(task.getTitle()) + "\",");
 		out.print("\"content\":\"" + escapeJson(task.getContent()) + "\",");
 		out.print("\"colorId\":" + task.getColorId() + ",");
+		out.print("\"isOwner\":" + isOwner + ",");
 		out.print("\"imageIdList\":[");
 
 		List<Integer> imageIdList = task.getImageIdList();
@@ -63,6 +73,8 @@ public class TaskDetailServlet extends HttpServlet {
 		out.print("]");
 		out.print("}");
 	}
+	
+	
 
 	private String escapeJson(String str) {
 		if (str == null) {
