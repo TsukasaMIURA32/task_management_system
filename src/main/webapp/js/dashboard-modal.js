@@ -1,3 +1,6 @@
+/* ==========================================================
+   編集モーダル本体の要素取得
+========================================================== */
 const editModalOverlay = document.getElementById("editModalOverlay");
 const editNoteForm = document.getElementById("editNoteForm");
 const editTargetId = document.getElementById("editTargetId");
@@ -5,6 +8,9 @@ const editNoteTitle = document.getElementById("editNoteTitle");
 const editNoteContent = document.getElementById("editNoteContent");
 const closeEditModal = document.getElementById("closeEditModal");
 
+/* ==========================================================
+   編集モーダル内の画像関連要素
+========================================================== */
 const editImageButton = document.getElementById("editImageButton");
 const editNoteImage = document.getElementById("editNoteImage");
 const editNoteColorId = document.getElementById("editNoteColorId");
@@ -13,13 +19,33 @@ const editDeleteImageIds = document.getElementById("editDeleteImageIds");
 const editImagePreviewArea = document.getElementById("editImagePreviewArea");
 const editImagePreviewList = document.getElementById("editImagePreviewList");
 
+/* ==========================================================
+   削除ボタン・共有ユーザー表示
+========================================================== */
 const editDeleteButton = document.getElementById("editDeleteButton");
 const editSharedUsersText = document.getElementById("editSharedUsersText");
 
+/* ==========================================================
+   共同編集者モーダル関連
+========================================================== */
+const openEditMemberModal = document.getElementById("openEditMemberModal");
+const editMemberModalOverlay = document.getElementById("editMemberModalOverlay");
+const closeEditMemberModal = document.getElementById("closeEditMemberModal");
+const doneEditMemberModal = document.getElementById("doneEditMemberModal");
+
+/* 一覧のタスクカード */
 const noteCards = document.getElementsByClassName("note-card");
 
+/* 
+   編集モーダル内で新規追加した画像ファイルを保持する配列
+   既存画像はサーバー側のデータなので別管理
+*/
 let selectedNewFiles = [];
 
+/* 
+   必須要素がそろっているときだけ初期化を進める
+   要素が不足しているページでエラーになるのを防ぐ
+*/
 if (
   editModalOverlay &&
   editNoteForm &&
@@ -27,6 +53,7 @@ if (
   editNoteTitle &&
   editNoteContent
 ) {
+  /* 編集フォームで使う背景色クラス一覧 */
   const NOTE_COLOR_CLASSES = [
     "color-yellow",
     "color-blue",
@@ -34,43 +61,67 @@ if (
     "color-pink"
   ];
 
-  const editMemberSelector = document.querySelector('#editMemberPopover .member-selector');
-  if (editMemberSelector && typeof initMemberSelector === "function") {
-    window.editMemberSelectorApi = initMemberSelector(editMemberSelector);
+  /* ==========================================================
+     編集用の共同編集者選択機能を初期化
+     dashboard-member.js 側の initMemberSelector を使う
+  ========================================================== */
+  const editMemberSelectorContainer = document.querySelector('.member-selector[data-mode="edit"]');
+  if (editMemberSelectorContainer && typeof initMemberSelector === "function") {
+    window.editMemberSelectorApi = initMemberSelector(editMemberSelectorContainer);
   }
 
+  /* ==========================================================
+     編集モーダル内のpopover関係の要素取得
+  ========================================================== */
+
+  /* data-edit-popover を持つボタン一覧を取得 */
   function getEditPopoverButtons() {
     return editNoteForm.querySelectorAll("[data-edit-popover]");
   }
 
+  /* 色チップ一覧を取得 */
   function getEditColorChips() {
     return editNoteForm.querySelectorAll("[data-edit-color]");
   }
 
+  /* 編集モーダル内のpopover本体を取得 */
   function getEditPopovers() {
     return editNoteForm.getElementsByClassName("popover-panel");
   }
 
+  /* ==========================================================
+     背景色制御
+  ========================================================== */
+
+  /* 編集フォームについている色クラスをすべて外す */
   function clearEditFormColors() {
     for (let i = 0; i < NOTE_COLOR_CLASSES.length; i++) {
       editNoteForm.classList.remove(NOTE_COLOR_CLASSES[i]);
     }
   }
 
+  /* 指定された色クラスだけ編集フォームに付与する */
   function setEditFormColor(colorClass) {
     clearEditFormColors();
+
     if (colorClass) {
       editNoteForm.classList.add(colorClass);
     }
   }
 
+  /* 色チップの active 表示をいったん全部外す */
   function clearEditChipActive() {
     const editColorChips = getEditColorChips();
+
     for (let i = 0; i < editColorChips.length; i++) {
       editColorChips[i].classList.remove("active");
     }
   }
 
+  /* 
+     現在の色クラスに対応する色チップへ active を付ける
+     デフォルト色のときは data-edit-color="" を対象にする
+  */
   function setActiveEditChipByColor(colorClass) {
     clearEditChipActive();
 
@@ -87,6 +138,7 @@ if (
     }
   }
 
+  /* DBの colorId を CSS クラスへ変換 */
   function getColorClassByColorId(colorId) {
     switch (Number(colorId)) {
       case 2:
@@ -102,6 +154,7 @@ if (
     }
   }
 
+  /* CSS クラスを DB 保存用の colorId に変換 */
   function getColorIdByColorClass(colorClass) {
     switch (colorClass) {
       case "color-yellow":
@@ -117,6 +170,11 @@ if (
     }
   }
 
+  /* ==========================================================
+     popover / モーダル開閉
+  ========================================================== */
+
+  /* 編集モーダル内のpopoverを全部閉じる */
   function closeEditPopovers() {
     const editPopovers = getEditPopovers();
 
@@ -127,11 +185,34 @@ if (
     }
   }
 
+  /* 編集モーダル本体を閉じる */
   function closeEditModalFn() {
     closeEditPopovers();
     editModalOverlay.classList.remove("show");
   }
 
+  /* 共同編集者モーダルを開く */
+  function openEditMemberModalFn() {
+    if (editMemberModalOverlay) {
+      editMemberModalOverlay.classList.add("show");
+    }
+  }
+
+  /* 共同編集者モーダルを閉じる */
+  function closeEditMemberModalFn() {
+    if (editMemberModalOverlay) {
+      editMemberModalOverlay.classList.remove("show");
+    }
+  }
+
+  /* ==========================================================
+     画像削除対象ID管理
+  ========================================================== */
+
+  /* 
+     既存画像を削除したとき、その imageId を hidden に蓄積する
+     サーバーは deleteImageIds を見て削除対象を判断する
+  */
   function addDeleteImageId(imageId) {
     if (!editDeleteImageIds) {
       return;
@@ -154,10 +235,19 @@ if (
     }
   }
 
+  /* ==========================================================
+     画像プレビュー関連
+  ========================================================== */
+
+  /* プレビュー一覧に現在存在する画像要素を取得 */
   function getAllPreviewItems() {
     return editImagePreviewList.getElementsByClassName("image-preview-item");
   }
 
+  /* 
+     画像枚数に応じて grid クラスを付け替える
+     0枚ならプレビュー領域を hidden にする
+  */
   function updatePreviewGridClass() {
     if (!editImagePreviewArea || !editImagePreviewList) {
       return;
@@ -176,6 +266,11 @@ if (
     editImagePreviewArea.classList.remove("hidden");
   }
 
+  /* 
+     プレビュー内の × ボタンに削除イベントを付ける
+     - 既存画像なら deleteImageIds に追加
+     - 新規画像なら selectedNewFiles から削除
+  */
   function bindPreviewRemoveEvents() {
     const removeButtons = editImagePreviewList.getElementsByClassName("image-remove-button");
 
@@ -192,6 +287,7 @@ if (
           return;
         }
 
+        /* 既存画像を削除した場合 */
         if (imageType === "existing") {
           const imageId = button.getAttribute("data-image-id");
           if (imageId) {
@@ -202,6 +298,7 @@ if (
           return;
         }
 
+        /* 新規追加画像を削除した場合 */
         if (imageType === "new") {
           const newIndex = Number(button.getAttribute("data-new-index"));
           const nextFiles = [];
@@ -215,6 +312,7 @@ if (
           selectedNewFiles = nextFiles;
           syncFileInputFromSelectedFiles();
 
+          /* 残っている既存画像IDを拾い直して再描画 */
           const existingItems = editImagePreviewList.getElementsByClassName("existing-image-item");
           const existingImageIdList = [];
 
@@ -228,6 +326,10 @@ if (
     }
   }
 
+  /* 
+     JSで保持している selectedNewFiles を
+     実際の input[type=file] に同期する
+  */
   function syncFileInputFromSelectedFiles() {
     if (!editNoteImage) {
       return;
@@ -242,6 +344,10 @@ if (
     editNoteImage.files = dataTransfer.files;
   }
 
+  /* 
+     既存画像 + 新規画像をまとめてプレビュー描画する
+     毎回いったん全消ししてから組み立て直す
+  */
   function renderUnifiedPreview(existingImageIdList) {
     if (!editImagePreviewArea || !editImagePreviewList) {
       return;
@@ -249,6 +355,7 @@ if (
 
     editImagePreviewList.innerHTML = "";
 
+    /* まず既存画像を描画 */
     if (existingImageIdList !== null && existingImageIdList !== undefined) {
       for (let i = 0; i < existingImageIdList.length; i++) {
         const imageId = existingImageIdList[i];
@@ -267,14 +374,16 @@ if (
       }
     }
 
+    /* 新規画像がなければここで終了 */
     if (selectedNewFiles.length === 0) {
       updatePreviewGridClass();
       bindPreviewRemoveEvents();
       return;
     }
 
+    /* 新規画像は FileReader で読み込んで描画 */
     for (let j = 0; j < selectedNewFiles.length; j++) {
-      ((file, index) => {
+      (function (file, index) {
         const reader = new FileReader();
 
         reader.onload = function (e) {
@@ -301,6 +410,11 @@ if (
     bindPreviewRemoveEvents();
   }
 
+  /* ==========================================================
+     共有ユーザー表示
+  ========================================================== */
+
+  /* 編集フォーム上に共有ユーザー名を表示する */
   function renderEditSharedUsers(sharedUsers) {
     if (!editSharedUsersText) {
       return;
@@ -311,10 +425,21 @@ if (
       return;
     }
 
-    const names = sharedUsers.map(user => user.name).join("、");
-    editSharedUsersText.innerHTML = `<i class="fas fa-users"></i>: ${names}`;
+    const names = sharedUsers.map(function (user) {
+      return user.name;
+    }).join("、");
+
+    editSharedUsersText.innerHTML = '<i class="fas fa-users"></i>: ' + names;
   }
 
+  /* ==========================================================
+     タスク詳細取得 → 編集モーダル表示
+  ========================================================== */
+
+  /* 
+     カードを押したときにタスク詳細をサーバーから取得し、
+     編集モーダルへ反映して表示する
+  */
   async function openEditModalByAjax(taskId) {
     try {
       const response = await fetch(
@@ -329,6 +454,7 @@ if (
       console.log("task detail =", task);
       console.log("sharedUsers =", task.sharedUsers);
 
+      /* タスク基本情報をフォームへ反映 */
       editTargetId.value = task.id || "";
       editNoteTitle.value = task.title || "";
       editNoteContent.value = task.content || "";
@@ -337,26 +463,32 @@ if (
         editNoteColorId.value = task.colorId || 1;
       }
 
+      /* 削除予定画像IDを初期化 */
       if (editDeleteImageIds) {
         editDeleteImageIds.value = "";
       }
 
+      /* 新規追加画像状態を初期化 */
       selectedNewFiles = [];
       if (editNoteImage) {
         editNoteImage.value = "";
       }
 
+      /* 背景色反映 */
       const colorClass = getColorClassByColorId(task.colorId);
       setEditFormColor(colorClass);
       setActiveEditChipByColor(colorClass);
 
+      /* 画像・共有ユーザー反映 */
       renderUnifiedPreview(task.imageIdList || []);
       renderEditSharedUsers(task.sharedUsers || []);
 
+      /* 共同編集者モーダル側の初期値も合わせる */
       if (window.editMemberSelectorApi) {
         window.editMemberSelectorApi.setUsers(task.sharedUsers || []);
       }
 
+      /* オーナーなら削除、共有相手なら共有解除 */
       if (editDeleteButton) {
         if (task.isOwner) {
           editDeleteButton.textContent = "削除";
@@ -368,6 +500,7 @@ if (
       }
 
       closeEditPopovers();
+      closeEditMemberModalFn();
       editModalOverlay.classList.add("show");
 
     } catch (error) {
@@ -376,6 +509,7 @@ if (
     }
   }
 
+  /* 一覧カードクリック時に編集モーダルを開く */
   for (let i = 0; i < noteCards.length; i++) {
     noteCards[i].addEventListener("click", async function () {
       const noteId = this.getAttribute("data-note-id");
@@ -387,6 +521,11 @@ if (
     });
   }
 
+  /* ==========================================================
+     編集モーダルの基本イベント
+  ========================================================== */
+
+  /* 閉じるボタン押下時はフォーム送信 */
   if (closeEditModal) {
     closeEditModal.addEventListener("click", function (e) {
       e.preventDefault();
@@ -395,12 +534,14 @@ if (
     });
   }
 
+  /* オーバーレイ背景クリックでモーダルを閉じる */
   editModalOverlay.addEventListener("click", function (e) {
     if (e.target === editModalOverlay) {
       closeEditModalFn();
     }
   });
 
+  /* 削除 / 共有解除ボタン処理 */
   if (editDeleteButton) {
     editDeleteButton.addEventListener("click", function (e) {
       e.preventDefault();
@@ -440,10 +581,16 @@ if (
     });
   }
 
+  /* フォーム内クリックは外側クリック扱いにしない */
   editNoteForm.addEventListener("click", function (e) {
     e.stopPropagation();
   });
 
+  /* ==========================================================
+     編集モーダル内のpopover制御
+  ========================================================== */
+
+  /* 色変更や詳細メニューなどのpopoverボタン処理 */
   const editPopoverButtons = getEditPopoverButtons();
   for (let i = 0; i < editPopoverButtons.length; i++) {
     editPopoverButtons[i].addEventListener("click", function (e) {
@@ -477,6 +624,7 @@ if (
     });
   }
 
+  /* popover内クリックで閉じないようにする */
   const editPopovers = getEditPopovers();
   for (let i = 0; i < editPopovers.length; i++) {
     editPopovers[i].addEventListener("click", function (e) {
@@ -484,6 +632,7 @@ if (
     });
   }
 
+  /* 色チップ押下時に背景色変更 */
   const editColorChips = getEditColorChips();
   for (let i = 0; i < editColorChips.length; i++) {
     editColorChips[i].addEventListener("click", function (e) {
@@ -503,7 +652,12 @@ if (
     });
   }
 
+  /* ==========================================================
+     編集モーダル内の画像追加
+  ========================================================== */
+
   if (editImageButton && editNoteImage) {
+    /* 画像追加ボタン押下で file input を開く */
     editImageButton.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -511,6 +665,7 @@ if (
       editNoteImage.click();
     });
 
+    /* file input 変更時、新規画像を state に追加して再描画 */
     editNoteImage.addEventListener("change", function () {
       const newFiles = Array.from(editNoteImage.files || []);
 
@@ -531,12 +686,70 @@ if (
     });
   }
 
+  /* ==========================================================
+     共同編集者モーダル開閉
+  ========================================================== */
+
+  /* 共同編集者ボタン押下でモーダルを開く */
+  if (openEditMemberModal) {
+    openEditMemberModal.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeEditPopovers();
+      openEditMemberModalFn();
+    });
+  }
+
+  /* × ボタンで閉じる */
+  if (closeEditMemberModal) {
+    closeEditMemberModal.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeEditMemberModalFn();
+    });
+  }
+
+  /* フッターの閉じるボタンでも閉じる */
+  if (doneEditMemberModal) {
+    doneEditMemberModal.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeEditMemberModalFn();
+    });
+  }
+
+  /* モーダル背景クリックで閉じる */
+  if (editMemberModalOverlay) {
+    editMemberModalOverlay.addEventListener("click", function (e) {
+      if (e.target === editMemberModalOverlay) {
+        closeEditMemberModalFn();
+      }
+    });
+  }
+
+  /* ==========================================================
+     キーボード・外側クリック処理
+  ========================================================== */
+
+  /* 
+     Escapeキー押下時
+     - 共同編集者モーダルが開いていればそれを閉じる
+     - そうでなければ編集モーダルを閉じる
+  */
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && editModalOverlay.classList.contains("show")) {
-      closeEditModalFn();
+    if (e.key === "Escape") {
+      if (editMemberModalOverlay && editMemberModalOverlay.classList.contains("show")) {
+        closeEditMemberModalFn();
+        return;
+      }
+
+      if (editModalOverlay.classList.contains("show")) {
+        closeEditModalFn();
+      }
     }
   });
 
+  /* 編集モーダル表示中に外側クリックしたらpopoverだけ閉じる */
   document.addEventListener("click", function () {
     if (editModalOverlay.classList.contains("show")) {
       closeEditPopovers();

@@ -1,59 +1,98 @@
+/* =========================
+   レイアウト関連の要素
+   ========================= */
 const menuToggle = document.getElementById("menuToggle");
 const sidebar = document.getElementById("sidebar");
 const contentArea = document.getElementById("contentArea");
 
+/* =========================
+   新規タスク作成フォーム関連の要素
+   ========================= */
 const noteForm = document.getElementById("noteForm");
 const noteTitle = document.getElementById("noteTitle");
 const noteContent = document.getElementById("noteContent");
 const closeNoteForm = document.getElementById("closeNoteForm");
 
+/* collapsed時の右上画像アイコンと、実際の file input */
 const imageUploadButton = document.getElementById("imageUploadButton");
 const noteImage = document.getElementById("noteImage");
 
-/* プレビュー画像関連 */
+/* =========================
+   画像プレビュー関連の要素
+   ========================= */
 const imagePreviewArea = document.getElementById("imagePreviewArea");
 const imagePreviewList = document.getElementById("imagePreviewList");
 const removeImageButton = document.getElementById("removeImageButton");
 
-/* popover関連 */
+/* =========================
+   popover関連の要素
+   ========================= */
 const popoverButtons = noteForm.querySelectorAll("[data-popover]");
 const popovers = noteForm.querySelectorAll(".popover-panel");
 const colorChips = noteForm.querySelectorAll("[data-color]");
 const noteColorId = document.getElementById("noteColorId");
-//
-//const memberNameInput = document.getElementById("memberNameInput");
-//const addMemberButton = document.getElementById("addMemberButton");
-//const memberPreview = document.getElementById("memberPreview");
 
+/* =========================
+   ツールボタン類
+   ========================= */
 const imageSelectButton = document.getElementById("imageSelectButton");
 const archiveButton = document.getElementById("archiveButton");
 const deleteButton = document.getElementById("deleteButton");
 const undoButton = document.getElementById("undoButton");
 const redoButton = document.getElementById("redoButton");
 
-/* 簡易状態管理 */
+/* =========================
+   共同編集者モーダル関連
+   ========================= */
+const openCreateMemberModal = document.getElementById("openCreateMemberModal");
+const createMemberModalOverlay = document.getElementById("createMemberModalOverlay");
+const closeCreateMemberModal = document.getElementById("closeCreateMemberModal");
+const doneCreateMemberModal = document.getElementById("doneCreateMemberModal");
+
+/* =========================
+   一時状態管理用の変数
+   ========================= */
+
+/* 削除前の下書きを一時退避するための変数（今は主に削除時用） */
 let deletedDraft = null;
+
+/* アーカイブ状態用。今は未使用に近い */
 let archived = false;
 
-/* 画像状態管理（追加式） */
+/* 
+  新規作成フォームで選択された画像ファイルを保持する配列
+  file input は選び直し時に扱いづらいので、JS側でも持っておく
+*/
 let selectedImageFiles = [];
 
-/* -------------------------
+/* =========================
    サイドバー開閉
-------------------------- */
+   ========================= */
+
+/* 
+  ハンバーガーボタン押下時
+  - サイドバーに closed クラスを付け外し
+  - メイン表示領域にも sidebar-closed を付け外し
+*/
 menuToggle.addEventListener("click", function () {
   sidebar.classList.toggle("closed");
   contentArea.classList.toggle("sidebar-closed");
 });
 
-/* -------------------------
-   メモ入力フォーム展開・閉じる
-------------------------- */
+/* =========================
+   新規フォームの開閉
+   ========================= */
+
+/* フォームを expanded 状態にする */
 function openNoteForm() {
   noteForm.classList.remove("collapsed");
   noteForm.classList.add("expanded");
 }
 
+/* 
+  タイトル・本文・画像がすべて空ならフォームを閉じる
+  クリックアウト時などに使う
+*/
 function closeNoteFormIfEmpty() {
   const titleValue = noteTitle.value.trim();
   const contentValue = noteContent.value.trim();
@@ -66,6 +105,14 @@ function closeNoteFormIfEmpty() {
   }
 }
 
+/* 
+  フォームを強制的に初期状態へ戻す
+  - 入力内容クリア
+  - 画像クリア
+  - 色クリア
+  - 共同編集者クリア
+  - popoverも閉じる
+*/
 function forceCloseNoteForm() {
   noteTitle.value = "";
   noteContent.value = "";
@@ -85,38 +132,53 @@ function forceCloseNoteForm() {
   closeAllPopovers();
 }
 
-/* -------------------------
-   フォームを開く処理
-------------------------- */
+/* =========================
+   フォームを開くきっかけになるイベント
+   ========================= */
+
+/* 本文クリックでフォームを開く */
 noteContent.addEventListener("click", function (e) {
   e.stopPropagation();
   openNoteForm();
 });
 
+/* 本文フォーカスでもフォームを開く */
 noteContent.addEventListener("focus", function () {
   openNoteForm();
 });
 
+/* タイトルフォーカスでもフォームを開く */
 noteTitle.addEventListener("focus", function () {
   openNoteForm();
 });
 
+/* フォーム内クリックは外側クリック扱いにしない */
 noteForm.addEventListener("click", function (e) {
   e.stopPropagation();
 });
 
-/* -------------------------
-   画像ボタン（collapsed時の右上アイコン）
-------------------------- */
+/* =========================
+   collapsed時の右上画像ボタン
+   ========================= */
+
+/* 
+  フォームが閉じている状態でも画像だけ先に選べるようにする
+  クリック時にフォームを開いて file input を押す
+*/
 imageUploadButton.addEventListener("click", function (e) {
   e.stopPropagation();
   openNoteForm();
   noteImage.click();
 });
 
-/* -------------------------
-   閉じる処理
-------------------------- */
+/* =========================
+   閉じるボタン処理
+   ========================= */
+
+/* 
+  現在フォームに何か入力があるか判定
+  画像が1枚でもあれば「入力あり」とみなす
+*/
 function hasNoteInput() {
   const titleValue = noteTitle.value.trim();
   const contentValue = noteContent.value.trim();
@@ -125,6 +187,11 @@ function hasNoteInput() {
   return titleValue !== "" || contentValue !== "" || hasImage;
 }
 
+/* 
+  閉じるボタン押下時
+  - 入力があれば submit
+  - 何もなければフォームを初期化して閉じる
+*/
 closeNoteForm.addEventListener("click", function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -137,21 +204,34 @@ closeNoteForm.addEventListener("click", function (e) {
   }
 });
 
+/* 
+  画面のどこかをクリックしたとき
+  - 空ならフォームを閉じる
+  - 開いているpopoverを閉じる
+*/
 document.addEventListener("click", function () {
   closeNoteFormIfEmpty();
   closeAllPopovers();
 });
 
-/* -------------------------
-   Popover共通
-------------------------- */
+/* =========================
+   popover共通処理
+   ========================= */
+
+/* すべてのpopoverを閉じる */
 function closeAllPopovers() {
-  popovers.forEach((popover) => {
+  popovers.forEach(function (popover) {
     popover.classList.remove("show");
   });
 }
 
-popoverButtons.forEach((button) => {
+/* 
+  背景色・詳細メニューなどのpopoverボタン押下時
+  - フォームを開く
+  - 対象popoverの位置を計算
+  - そのpopoverだけ表示
+*/
+popoverButtons.forEach(function (button) {
   button.addEventListener("click", function (e) {
     e.stopPropagation();
     openNoteForm();
@@ -174,18 +254,29 @@ popoverButtons.forEach((button) => {
   });
 });
 
-popovers.forEach((popover) => {
+/* popover内部クリックは外側クリック扱いにしない */
+popovers.forEach(function (popover) {
   popover.addEventListener("click", function (e) {
     e.stopPropagation();
   });
 });
 
-/* -------------------------
-   カラー選択
-------------------------- */
-colorChips.forEach(chip => {
+/* =========================
+   背景色選択
+   ========================= */
+
+/* 
+  色チップ押下時
+  - active表示を切り替える
+  - formの背景色クラスを切り替える
+  - hiddenのcolorIdを更新する
+*/
+colorChips.forEach(function (chip) {
   chip.addEventListener("click", function () {
-    colorChips.forEach(c => c.classList.remove("active"));
+    colorChips.forEach(function (c) {
+      c.classList.remove("active");
+    });
+
     chip.classList.add("active");
 
     const colorClass = chip.dataset.color;
@@ -225,9 +316,10 @@ colorChips.forEach(chip => {
   });
 });
 
-/* -------------------------
-   背景色リセット
-------------------------- */
+/* 
+  背景色をデフォルト状態に戻す
+  色クラスもactive表示も消す
+*/
 function resetNoteColor() {
   noteForm.classList.remove(
     "color-yellow",
@@ -237,24 +329,30 @@ function resetNoteColor() {
     "color-gray"
   );
 
-  document.querySelectorAll(".color-chip")
-    .forEach(chip => chip.classList.remove("active"));
+  document.querySelectorAll(".color-chip").forEach(function (chip) {
+    chip.classList.remove("active");
+  });
 
   noteColorId.value = 1;
 }
 
+/* =========================
+   画像追加（Google Keep風）
+   ========================= */
 
-
-/* -------------------------
-   ③ 画像登録（Google Keep風：1枚ずつ追加）
-------------------------- */
+/* ツールバーの画像追加ボタン押下 */
 imageSelectButton.addEventListener("click", function () {
   openNoteForm();
   noteImage.click();
   closeAllPopovers();
 });
 
-/* inputから選ばれた画像を状態に追加 */
+/* 
+  file input で画像選択後
+  - 最大4枚まで追加
+  - 重複ファイルは除外
+  - input.files とプレビューを更新
+*/
 noteImage.addEventListener("change", function () {
   const newFiles = Array.from(noteImage.files || []);
 
@@ -268,11 +366,13 @@ noteImage.addEventListener("change", function () {
       break;
     }
 
-    const isDuplicate = selectedImageFiles.some(existing =>
-      existing.name === file.name &&
-      existing.size === file.size &&
-      existing.lastModified === file.lastModified
-    );
+    const isDuplicate = selectedImageFiles.some(function (existing) {
+      return (
+        existing.name === file.name &&
+        existing.size === file.size &&
+        existing.lastModified === file.lastModified
+      );
+    });
 
     if (!isDuplicate) {
       selectedImageFiles.push(file);
@@ -283,22 +383,28 @@ noteImage.addEventListener("change", function () {
   renderImagePreviews();
   openNoteForm();
 
-  /* 同じファイルを再度選んだときにもchangeが発火しやすいように */
+  /* 同じ画像を再選択できるよう input値を空にする */
   noteImage.value = "";
 });
 
-/* File配列をinput.filesへ同期 */
+/* 
+  JSで保持している selectedImageFiles を
+  実際の input[type=file] に反映する
+*/
 function syncNoteImageInput() {
   const dataTransfer = new DataTransfer();
 
-  selectedImageFiles.forEach(file => {
+  selectedImageFiles.forEach(function (file) {
     dataTransfer.items.add(file);
   });
 
   noteImage.files = dataTransfer.files;
 }
 
-/* プレビュー描画 */
+/* 
+  現在選択中の画像一覧をプレビュー描画する
+  枚数に応じて grid クラスも切り替える
+*/
 function renderImagePreviews() {
   imagePreviewList.innerHTML = "";
 
@@ -326,7 +432,7 @@ function renderImagePreviews() {
     imagePreviewList.classList.add("image-grid-4");
   }
 
-  selectedImageFiles.forEach((file, index) => {
+  selectedImageFiles.forEach(function (file, index) {
     const reader = new FileReader();
 
     reader.onload = function (e) {
@@ -342,6 +448,7 @@ function renderImagePreviews() {
       removeButton.classList.add("image-remove-button");
       removeButton.textContent = "×";
 
+      /* 画像ごとの×ボタンでその画像だけ削除 */
       removeButton.addEventListener("click", function (event) {
         event.stopPropagation();
         removeSelectedImage(index);
@@ -358,40 +465,36 @@ function renderImagePreviews() {
   imagePreviewArea.classList.remove("hidden");
 }
 
-/* 画像1枚削除 */
+/* 指定indexの画像1枚だけ削除 */
 function removeSelectedImage(index) {
   selectedImageFiles.splice(index, 1);
   syncNoteImageInput();
   renderImagePreviews();
 }
 
-/* 画像全部削除 */
+/* 画像全部削除ボタン押下 */
 removeImageButton.addEventListener("click", function () {
   selectedImageFiles = [];
   syncNoteImageInput();
   renderImagePreviews();
 });
 
-/* -------------------------
-   ④ アーカイブ
-------------------------- */
-//archiveButton.addEventListener("click", function () {
-//  archived = true;
-//  alert("アーカイブしました");
-//  closeAllPopovers();
-//});
+/* =========================
+   詳細メニュー → 下書き削除
+   ========================= */
 
-/* -------------------------
-   ⑤ 詳細メニュー → 削除
-------------------------- */
+/* 
+  新規フォームの入力内容を丸ごとクリアする
+  必要に応じて deletedDraft に退避
+*/
 deleteButton.addEventListener("click", function () {
   deletedDraft = {
     title: noteTitle.value,
     content: noteContent.value,
-    colorClasses: Array.from(noteForm.classList).filter((cls) =>
-      cls.startsWith("color-")
-    ),
-    images: [...selectedImageFiles]
+    colorClasses: Array.from(noteForm.classList).filter(function (cls) {
+      return cls.startsWith("color-");
+    }),
+    images: [].concat(selectedImageFiles)
   };
 
   noteTitle.value = "";
@@ -418,246 +521,63 @@ deleteButton.addEventListener("click", function () {
   closeNoteFormIfEmpty();
 });
 
-/* -------------------------
-   ⑥ undo
-------------------------- */
-//undoButton.addEventListener("click", function (e) {
-//  e.stopPropagation();
-//
-//  if (deletedDraft) {
-//    noteTitle.value = deletedDraft.title;
-//    noteContent.value = deletedDraft.content;
-//    memberPreview.textContent = deletedDraft.memberText || "";
-//
-//    selectedImageFiles = [...(deletedDraft.images || [])];
-//    syncNoteImageInput();
-//    renderImagePreviews();
-//
-//    noteForm.classList.remove(
-//      "color-yellow",
-//      "color-blue",
-//      "color-green",
-//      "color-pink",
-//      "color-gray"
-//    );
-//
-//    deletedDraft.colorClasses.forEach((cls) => noteForm.classList.add(cls));
-//
-//    openNoteForm();
-//    deletedDraft = null;
-//  }
-//});
+/* =========================
+   共同編集者モーダル開閉
+   ========================= */
 
-/* -------------------------
-   ⑦ redo
-------------------------- */
-//redoButton.addEventListener("click", function (e) {
-//  e.stopPropagation();
-//
-//  if (
-//    noteTitle.value !== "" ||
-//    noteContent.value !== "" ||
-//    selectedImageFiles.length > 0
-//  ) {
-//    deletedDraft = {
-//      title: noteTitle.value,
-//      content: noteContent.value,
-//      colorClasses: Array.from(noteForm.classList).filter((cls) =>
-//        cls.startsWith("color-")
-//      ),
-//      memberText: memberPreview.textContent,
-//      images: [...selectedImageFiles]
-//    };
-//
-//    noteTitle.value = "";
-//    noteContent.value = "";
-//    memberPreview.textContent = "";
-//
-//    selectedImageFiles = [];
-//    syncNoteImageInput();
-//    renderImagePreviews();
-//
-//    noteForm.classList.remove(
-//      "color-yellow",
-//      "color-blue",
-//      "color-green",
-//      "color-pink",
-//      "color-gray"
-//    );
-//
-//    closeNoteFormIfEmpty();
-//  }
-//});
-
-/* -------------------------
-   ② メンバー追加
-------------------------- */
-function initMemberSelector(container) {
-  const keywordInput = container.querySelector(".member-keyword-input");
-  const addButton = container.querySelector(".add-member-button");
-  const searchResult = container.querySelector(".member-search-result");
-  const preview = container.querySelector(".member-preview");
-  const hiddenContainer = container.querySelector(".shared-user-ids-container");
-
-  // 新規作成フォームのときだけ表示先がある
-  const inlineDisplay = document.getElementById("sharedUsersInline");
-
-  if (!keywordInput || !addButton || !searchResult || !preview || !hiddenContainer) {
-    console.warn("member selector の要素取得に失敗", container);
-    return null;
+/* 共同編集者モーダルを開く */
+function openCreateMemberModalFn() {
+  if (createMemberModalOverlay) {
+    createMemberModalOverlay.classList.add("show");
   }
-
-  let selectedUser = null;
-  const addedUsers = new Map();
-  let debounceTimer = null;
-
-  keywordInput.addEventListener("input", function () {
-    const keyword = this.value.trim();
-
-    clearTimeout(debounceTimer);
-
-    if (!keyword) {
-      searchResult.innerHTML = "";
-      selectedUser = null;
-      return;
-    }
-
-    debounceTimer = setTimeout(() => {
-      fetch(`${window.contextPath}/user/search?keyword=${encodeURIComponent(keyword)}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("ユーザー検索に失敗しました");
-          }
-          return response.json();
-        })
-        .then(users => {
-          searchResult.innerHTML = "";
-
-          if (!users || users.length === 0) {
-            searchResult.innerHTML = '<div class="search-empty">該当ユーザーがいません</div>';
-            selectedUser = null;
-            return;
-          }
-
-          users.forEach(user => {
-            const item = document.createElement("div");
-            item.className = "search-result-item";
-            item.textContent = `${user.name} (${user.email})`;
-
-            item.addEventListener("click", () => {
-              selectedUser = user;
-              keywordInput.value = `${user.name} (${user.email})`;
-              searchResult.innerHTML = "";
-            });
-
-            searchResult.appendChild(item);
-          });
-        })
-        .catch(error => {
-          console.error("ユーザー検索エラー", error);
-        });
-    }, 300);
-  });
-
-  addButton.addEventListener("click", function () {
-    if (!selectedUser) {
-      alert("候補からユーザーを選択してください");
-      return;
-    }
-
-    const userId = String(selectedUser.id);
-
-    if (addedUsers.has(userId)) {
-      alert("このユーザーはすでに追加されています");
-      return;
-    }
-
-    addedUsers.set(userId, selectedUser);
-    renderAddedUsers();
-
-    keywordInput.value = "";
-    searchResult.innerHTML = "";
-    selectedUser = null;
-    closeAllPopovers();
-  });
-
-  function renderAddedUsers() {
-    preview.innerHTML = "";
-    hiddenContainer.innerHTML = "";
-
-    const names = [];
-
-    addedUsers.forEach(user => {
-      names.push(user.name);
-
-      const chip = document.createElement("div");
-      chip.className = "member-chip";
-      chip.innerHTML = `
-        <span>${user.name}</span>
-        <button type="button" class="remove-member-button" data-user-id="${user.id}">×</button>
-      `;
-      preview.appendChild(chip);
-
-      const hidden = document.createElement("input");
-      hidden.type = "hidden";
-      hidden.name = "sharedUserIds";
-      hidden.value = user.id;
-      hiddenContainer.appendChild(hidden);
-    });
-
-    // タイトルとツールの間にも即時反映
-    if (inlineDisplay && container.dataset.mode === "create") {
-      if (names.length > 0) {
-        inlineDisplay.innerHTML = `<i class="fas fa-users"></i> ${names.join("、")}`;
-      } else {
-        inlineDisplay.innerHTML = "";
-      }
-    }
-
-    preview.querySelectorAll(".remove-member-button").forEach(button => {
-      button.addEventListener("click", function () {
-        const userId = this.dataset.userId;
-        addedUsers.delete(userId);
-        renderAddedUsers();
-      });
-    });
-  }
-
-  return {
-    setUsers(users) {
-      addedUsers.clear();
-
-      if (!users || users.length === 0) {
-        renderAddedUsers();
-        return;
-      }
-
-      users.forEach(user => {
-        addedUsers.set(String(user.id), user);
-      });
-
-      renderAddedUsers();
-    },
-    clearUsers() {
-      addedUsers.clear();
-      renderAddedUsers();
-    }
-  };
 }
 
-//==member selector初期化
-document.querySelectorAll(".member-selector").forEach(container => {
-  const api = initMemberSelector(container);
-
-  if (container.dataset.mode === "create") {
-    window.createMemberSelectorApi = api;
+/* 共同編集者モーダルを閉じる */
+function closeCreateMemberModalFn() {
+  if (createMemberModalOverlay) {
+    createMemberModalOverlay.classList.remove("show");
   }
-});
+}
 
-/* -------------------------
-   submit前にfilesを最終同期
-------------------------- */
+/* ツールバーの共同編集者ボタン押下 */
+if (openCreateMemberModal) {
+  openCreateMemberModal.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    openNoteForm();
+    closeAllPopovers();
+    openCreateMemberModalFn();
+  });
+}
+
+/* ×ボタンで閉じる */
+if (closeCreateMemberModal) {
+  closeCreateMemberModal.addEventListener("click", function () {
+    closeCreateMemberModalFn();
+  });
+}
+
+/* フッターの閉じるボタンでも閉じる */
+if (doneCreateMemberModal) {
+  doneCreateMemberModal.addEventListener("click", function () {
+    closeCreateMemberModalFn();
+  });
+}
+
+/* オーバーレイ背景クリックで閉じる */
+if (createMemberModalOverlay) {
+  createMemberModalOverlay.addEventListener("click", function (e) {
+    if (e.target === createMemberModalOverlay) {
+      closeCreateMemberModalFn();
+    }
+  });
+}
+
+/* =========================
+   form送信前の最終同期
+   ========================= */
+
+/* 送信直前に file input に画像一覧を反映 */
 noteForm.addEventListener("submit", function () {
   syncNoteImageInput();
 });
-

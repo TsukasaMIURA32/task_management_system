@@ -57,3 +57,19 @@
 .image-preview-list .image-preview-item {
   border-radius: 0;
 }
+
+
+/*==================編集モーダル*/
+.member-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(32, 33, 36, 0.46);
+  z-index: 3000;
+}
+
+.member-modal-overlay.show {
+  display: flex;
+}
