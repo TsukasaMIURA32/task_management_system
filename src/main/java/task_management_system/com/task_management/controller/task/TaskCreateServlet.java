@@ -33,8 +33,8 @@ public class TaskCreateServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
-        System.out.println("=== TaskCreateServlet ===");
-        System.out.println("session loginUser = " + loginUser);
+//        System.out.println("=== TaskCreateServlet ===");
+//        System.out.println("session loginUser = " + loginUser);
 
 //        if (loginUser != null) {
 //            System.out.println("loginUser id = " + loginUser.getId());

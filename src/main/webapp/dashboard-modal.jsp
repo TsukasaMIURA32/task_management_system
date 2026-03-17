@@ -79,9 +79,8 @@ if (editTask != null && editTask.getImageIdList() != null) {
 						<i class="far fa-bell"></i>
 					</button>
 
-					<button type="button" class="tool-button"
-						data-edit-popover="editMemberPopover" aria-label="メンバー追加">
-						<i class="fas fa-user-plus"></i>
+					<button type="button" class="tool-button" id="openEditMemberModal" aria-label="メンバー追加">
+					    <i class="fas fa-user-plus"></i>
 					</button>
 
 					<button type="button" class="tool-button" id="editImageButton"
@@ -119,19 +118,19 @@ if (editTask != null && editTask.getImageIdList() != null) {
 						</div>
 					</div>
 					<!-- メンバー追加 -->
-					<div class="popover-panel" id="editMemberPopover">
-						<div class="member-selector" data-mode="edit">
-							<div class="mini-form">
-								<input type="text" class="member-keyword-input"
-									placeholder="名前またはメールアドレスを入力">
-								<button type="button" class="add-member-button">追加</button>
-							</div>
+<!--					<div class="popover-panel" id="editMemberPopover">-->
+<!--						<div class="member-selector" data-mode="edit">-->
+<!--							<div class="mini-form">-->
+<!--								<input type="text" class="member-keyword-input"-->
+<!--									placeholder="名前またはメールアドレスを入力">-->
+<!--								<button type="button" class="add-member-button">追加</button>-->
+<!--							</div>-->
 					
-							<div class="member-search-result"></div>
-							<div class="member-preview"></div>
-							<div class="shared-user-ids-container"></div>
-						</div>
-					</div>
+<!--							<div class="member-search-result"></div>-->
+<!--							<div class="member-preview"></div>-->
+<!--							<div class="shared-user-ids-container"></div>-->
+<!--						</div>-->
+<!--					</div>-->
 
 					<div class="popover-panel" id="editMorePopover">
 						<button type="button" id="editDeleteButton"
@@ -142,3 +141,31 @@ if (editTask != null && editTask.getImageIdList() != null) {
 		</form>
 	</div>
 </div>
+
+		<!--		==========================================================================グループメンバー追加モーダル-->
+		<div class="member-modal-overlay" id="editMemberModalOverlay">
+			<div class="member-modal">
+				 <div class="member-modal-header">
+				   <h2>共同編集者</h2>
+				   <button type="button" class="member-modal-close" id="closeEditMemberModal">×</button>
+				 </div>
+			
+				<div class="member-modal-body">
+					<div class="member-selector" data-mode="edit">
+						<div class="mini-form">
+						  <input type="text" class="member-keyword-input" placeholder="名前またはメールアドレスを入力">
+						  <button type="button" class="add-member-button">追加</button>
+						</div>
+					
+						<div class="member-search-result"></div>
+						<div class="member-preview"></div>
+						<div class="shared-user-ids-container"></div>
+					</div>
+				</div>
+			
+				<div class="member-modal-footer">
+					<button type="button" class="member-modal-done" id="doneEditMemberModal">閉じる</button>
+				</div>
+			</div>
+		</div>
+	<!--		==========================================================================================================-->

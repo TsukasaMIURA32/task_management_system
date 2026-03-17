@@ -34,7 +34,7 @@
 			<div class="header-right">
 				<div class="header-icons">
 					<i class="fas fa-redo"></i> <i class="fas fa-columns"></i> <i
-						class="fas fa-cog"></i> <i class="fas fa-th"></i>
+						class="fas fa-cog"></i> <span class="phone-none"><i class="fas fa-th phone-none"></i></span>
 				</div>
 				<div class="user-menu-wrapper">
 					<button type="button" class="user-info" id="userMenuButton"
@@ -94,7 +94,7 @@
 									multiple hidden>
 							</div>
 							
-							<div class="shared-users-inline" id="sharedUsersInline"></div>
+							<div class="shared-users-text" id="sharedUsersInline"></div>
 						</div>
 						
 						<div class="form-actions">
@@ -112,9 +112,8 @@
 									<i class="far fa-bell"></i>
 								</button>
 
-								<button type="button" class="tool-button"
-									data-popover="memberPopover" aria-label="メンバー追加">
-									<i class="fas fa-user-plus"></i>
+								<button type="button" class="tool-button" id="openCreateMemberModal" aria-label="メンバー追加">
+								    <i class="fas fa-user-plus"></i>
 								</button>
 
 								<button type="button" class="tool-button" id="imageSelectButton"
@@ -166,19 +165,19 @@
 								</div>
 								<input type="hidden" id="noteColorId" name="colorId" value="1">
 								<!-- メンバー追加 -->
-								<div class="popover-panel" id="memberPopover">
-									<div class="member-selector" data-mode="create">
-										<div class="mini-form">
-											<input type="text" class="member-keyword-input"
-												placeholder="名前またはメールアドレスを入力">
-											<button type="button" class="add-member-button">追加</button>
-										</div>
+<!--								<div class="popover-panel" id="memberPopover">-->
+<!--									<div class="member-selector" data-mode="create">-->
+<!--										<div class="mini-form">-->
+<!--											<input type="text" class="member-keyword-input"-->
+<!--												placeholder="名前またはメールアドレスを入力">-->
+<!--											<button type="button" class="add-member-button">追加</button>-->
+<!--										</div>-->
 								
-										<div class="member-search-result"></div>
-										<div class="member-preview"></div>
-										<div class="shared-user-ids-container"></div>
-									</div>
-								</div>
+<!--										<div class="member-search-result"></div>-->
+<!--										<div class="member-preview"></div>-->
+<!--										<div class="shared-user-ids-container"></div>-->
+<!--									</div>-->
+<!--								</div>-->
 
 								<!-- 詳細メニュー -->
 								<div class="popover-panel" id="morePopover">
@@ -297,12 +296,38 @@
 		</main>
 
 		<jsp:include page="dashboard-modal.jsp" />
-
+<!--		==========================================================================グループメンバー追加モーダル-->
+		<div class="member-modal-overlay" id="createMemberModalOverlay">
+			<div class="member-modal">
+			    <div class="member-modal-header">
+			     	<h2>共同編集者</h2>
+			     	<button type="button" class="member-modal-close" id="closeCreateMemberModal">×</button>
+			    </div>
+		
+			    <div class="member-modal-body">
+					<div class="member-selector" data-mode="create">
+						 <div class="mini-form">
+						   <input type="text" class="member-keyword-input" placeholder="名前またはメールアドレスを入力">
+						   <button type="button" class="add-member-button">追加</button>
+						 </div>
+					
+						 <div class="member-search-result"></div>
+						 <div class="member-preview"></div>
+						 <div class="shared-user-ids-container"></div>
+					</div>
+			    </div>
+		
+			    <div class="member-modal-footer">
+			    	<button type="button" class="member-modal-done" id="doneCreateMemberModal">閉じる</button>
+			    </div>
+			</div>
+		</div>
 	</div>
-	
+	<!--		==========================================================================================================-->
 <script>
   window.contextPath = '<%=request.getContextPath()%>';
 </script>
+<script src="<%=request.getContextPath()%>/js/dashboard-member.js"></script>
 <script src="<%=request.getContextPath()%>/js/dashboard.js"></script>
 <script src="<%=request.getContextPath()%>/js/user-menu.js"></script>
 <script src="<%=request.getContextPath()%>/js/dashboard-modal.js"></script>

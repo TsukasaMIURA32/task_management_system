@@ -124,7 +124,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
     public UserDTO login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
-        System.out.println("UserDAO.login start");
+//        System.out.println("UserDAO.login start");
 
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
