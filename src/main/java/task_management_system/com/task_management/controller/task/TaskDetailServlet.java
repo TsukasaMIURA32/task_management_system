@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.TaskDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
+import task_management_system.com.task_management.dto.UserDTO;
 
 @WebServlet("/task/detail")
 public class TaskDetailServlet extends HttpServlet {
@@ -40,13 +41,13 @@ public class TaskDetailServlet extends HttpServlet {
 		}
 
 		HttpSession session = request.getSession(false);
-		Integer loginUserId = null;
+		UserDTO loginUser = null;
 		if (session != null) {
-		    loginUserId = (Integer) session.getAttribute("loginUserId");
+			loginUser = (UserDTO) session.getAttribute("loginUser");
 		}
 
-		boolean isOwner = loginUserId != null && task.getOwnerId() == loginUserId;
-		
+		boolean isOwner = loginUser != null && task.getOwnerId() == loginUser.getId();
+
 		response.setContentType("application/json; charset=UTF-8");
 		response.setCharacterEncoding("UTF-8");
 
@@ -58,8 +59,9 @@ public class TaskDetailServlet extends HttpServlet {
 		out.print("\"content\":\"" + escapeJson(task.getContent()) + "\",");
 		out.print("\"colorId\":" + task.getColorId() + ",");
 		out.print("\"isOwner\":" + isOwner + ",");
-		out.print("\"imageIdList\":[");
 
+		// 画像一覧
+		out.print("\"imageIdList\":[");
 		List<Integer> imageIdList = task.getImageIdList();
 		if (imageIdList != null) {
 			for (int i = 0; i < imageIdList.size(); i++) {
@@ -69,12 +71,30 @@ public class TaskDetailServlet extends HttpServlet {
 				}
 			}
 		}
+		out.print("],");
 
+		// 共有ユーザー一覧
+		out.print("\"sharedUsers\":[");
+		List<UserDTO> sharedUserList = task.getSharedUserList();
+		if (sharedUserList != null) {
+			for (int i = 0; i < sharedUserList.size(); i++) {
+				UserDTO user = sharedUserList.get(i);
+
+				out.print("{");
+				out.print("\"id\":" + user.getId() + ",");
+				out.print("\"name\":\"" + escapeJson(user.getUserName()) + "\",");
+				out.print("\"email\":\"" + escapeJson(user.getEmail()) + "\"");
+				out.print("}");
+
+				if (i < sharedUserList.size() - 1) {
+					out.print(",");
+				}
+			}
+		}
 		out.print("]");
+
 		out.print("}");
 	}
-	
-	
 
 	private String escapeJson(String str) {
 		if (str == null) {

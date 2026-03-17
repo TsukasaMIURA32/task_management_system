@@ -19,7 +19,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
     protected UserDTO mapRow(ResultSet rs) throws SQLException {
         UserDTO user = new UserDTO();
 
-        user.setUserId(rs.getInt("id"));
+        user.setId(rs.getInt("id"));
         user.setUserName(rs.getString("name"));
         user.setEmail(rs.getString("email"));
         user.setPassword(rs.getString("password"));
@@ -149,14 +149,22 @@ public class UserDAO extends BaseDAO<UserDTO> {
     public UserDTO login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
+        System.out.println("UserDAO.login start");
+
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
+            System.out.println("DB接続OK");
 
             ps.setString(1, email);
             ps.setString(2, password);
 
+            System.out.println("SQL実行前");
+
             try (ResultSet rs = ps.executeQuery()) {
+                System.out.println("SQL実行後");
                 if (rs.next()) {
+                    System.out.println("ユーザー見つかった");
                     return mapRow(rs);
                 }
             }
@@ -166,6 +174,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
             e.printStackTrace();
         }
 
+        System.out.println("ユーザー見つからず");
         return null;
     }
 
@@ -186,4 +195,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
             return false;
         }
     }
+    
+    
 }

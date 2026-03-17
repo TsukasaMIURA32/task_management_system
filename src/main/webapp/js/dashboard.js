@@ -20,10 +20,10 @@ const popoverButtons = noteForm.querySelectorAll("[data-popover]");
 const popovers = noteForm.querySelectorAll(".popover-panel");
 const colorChips = noteForm.querySelectorAll("[data-color]");
 const noteColorId = document.getElementById("noteColorId");
-
-const memberNameInput = document.getElementById("memberNameInput");
-const addMemberButton = document.getElementById("addMemberButton");
-const memberPreview = document.getElementById("memberPreview");
+//
+//const memberNameInput = document.getElementById("memberNameInput");
+//const addMemberButton = document.getElementById("addMemberButton");
+//const memberPreview = document.getElementById("memberPreview");
 
 const imageSelectButton = document.getElementById("imageSelectButton");
 const archiveButton = document.getElementById("archiveButton");
@@ -76,8 +76,9 @@ function forceCloseNoteForm() {
 
   resetNoteColor();
 
-  memberPreview.textContent = "";
-  memberNameInput.value = "";
+  if (window.createMemberSelectorApi) {
+    window.createMemberSelectorApi.clearUsers();
+  }
 
   noteForm.classList.remove("expanded");
   noteForm.classList.add("collapsed");
@@ -242,17 +243,7 @@ function resetNoteColor() {
   noteColorId.value = 1;
 }
 
-/* -------------------------
-   ② メンバー追加
-------------------------- */
-addMemberButton.addEventListener("click", function () {
-  const name = memberNameInput.value.trim();
-  if (name !== "") {
-    memberPreview.textContent = "追加メンバー: " + name;
-    memberNameInput.value = "";
-    closeAllPopovers();
-  }
-});
+
 
 /* -------------------------
    ③ 画像登録（Google Keep風：1枚ずつ追加）
@@ -400,17 +391,19 @@ deleteButton.addEventListener("click", function () {
     colorClasses: Array.from(noteForm.classList).filter((cls) =>
       cls.startsWith("color-")
     ),
-    memberText: memberPreview.textContent,
     images: [...selectedImageFiles]
   };
 
   noteTitle.value = "";
   noteContent.value = "";
-  memberPreview.textContent = "";
 
   selectedImageFiles = [];
   syncNoteImageInput();
   renderImagePreviews();
+
+  if (window.createMemberSelectorApi) {
+    window.createMemberSelectorApi.clearUsers();
+  }
 
   noteForm.classList.remove(
     "color-yellow",
@@ -428,71 +421,236 @@ deleteButton.addEventListener("click", function () {
 /* -------------------------
    ⑥ undo
 ------------------------- */
-undoButton.addEventListener("click", function (e) {
-  e.stopPropagation();
-
-  if (deletedDraft) {
-    noteTitle.value = deletedDraft.title;
-    noteContent.value = deletedDraft.content;
-    memberPreview.textContent = deletedDraft.memberText || "";
-
-    selectedImageFiles = [...(deletedDraft.images || [])];
-    syncNoteImageInput();
-    renderImagePreviews();
-
-    noteForm.classList.remove(
-      "color-yellow",
-      "color-blue",
-      "color-green",
-      "color-pink",
-      "color-gray"
-    );
-
-    deletedDraft.colorClasses.forEach((cls) => noteForm.classList.add(cls));
-
-    openNoteForm();
-    deletedDraft = null;
-  }
-});
+//undoButton.addEventListener("click", function (e) {
+//  e.stopPropagation();
+//
+//  if (deletedDraft) {
+//    noteTitle.value = deletedDraft.title;
+//    noteContent.value = deletedDraft.content;
+//    memberPreview.textContent = deletedDraft.memberText || "";
+//
+//    selectedImageFiles = [...(deletedDraft.images || [])];
+//    syncNoteImageInput();
+//    renderImagePreviews();
+//
+//    noteForm.classList.remove(
+//      "color-yellow",
+//      "color-blue",
+//      "color-green",
+//      "color-pink",
+//      "color-gray"
+//    );
+//
+//    deletedDraft.colorClasses.forEach((cls) => noteForm.classList.add(cls));
+//
+//    openNoteForm();
+//    deletedDraft = null;
+//  }
+//});
 
 /* -------------------------
    ⑦ redo
 ------------------------- */
-redoButton.addEventListener("click", function (e) {
-  e.stopPropagation();
+//redoButton.addEventListener("click", function (e) {
+//  e.stopPropagation();
+//
+//  if (
+//    noteTitle.value !== "" ||
+//    noteContent.value !== "" ||
+//    selectedImageFiles.length > 0
+//  ) {
+//    deletedDraft = {
+//      title: noteTitle.value,
+//      content: noteContent.value,
+//      colorClasses: Array.from(noteForm.classList).filter((cls) =>
+//        cls.startsWith("color-")
+//      ),
+//      memberText: memberPreview.textContent,
+//      images: [...selectedImageFiles]
+//    };
+//
+//    noteTitle.value = "";
+//    noteContent.value = "";
+//    memberPreview.textContent = "";
+//
+//    selectedImageFiles = [];
+//    syncNoteImageInput();
+//    renderImagePreviews();
+//
+//    noteForm.classList.remove(
+//      "color-yellow",
+//      "color-blue",
+//      "color-green",
+//      "color-pink",
+//      "color-gray"
+//    );
+//
+//    closeNoteFormIfEmpty();
+//  }
+//});
 
-  if (
-    noteTitle.value !== "" ||
-    noteContent.value !== "" ||
-    selectedImageFiles.length > 0
-  ) {
-    deletedDraft = {
-      title: noteTitle.value,
-      content: noteContent.value,
-      colorClasses: Array.from(noteForm.classList).filter((cls) =>
-        cls.startsWith("color-")
-      ),
-      memberText: memberPreview.textContent,
-      images: [...selectedImageFiles]
-    };
+/* -------------------------
+   ② メンバー追加
+------------------------- */
+function initMemberSelector(container) {
+  const keywordInput = container.querySelector(".member-keyword-input");
+  const addButton = container.querySelector(".add-member-button");
+  const searchResult = container.querySelector(".member-search-result");
+  const preview = container.querySelector(".member-preview");
+  const hiddenContainer = container.querySelector(".shared-user-ids-container");
 
-    noteTitle.value = "";
-    noteContent.value = "";
-    memberPreview.textContent = "";
+  // 新規作成フォームのときだけ表示先がある
+  const inlineDisplay = document.getElementById("sharedUsersInline");
 
-    selectedImageFiles = [];
-    syncNoteImageInput();
-    renderImagePreviews();
+  if (!keywordInput || !addButton || !searchResult || !preview || !hiddenContainer) {
+    console.warn("member selector の要素取得に失敗", container);
+    return null;
+  }
 
-    noteForm.classList.remove(
-      "color-yellow",
-      "color-blue",
-      "color-green",
-      "color-pink",
-      "color-gray"
-    );
+  let selectedUser = null;
+  const addedUsers = new Map();
+  let debounceTimer = null;
 
-    closeNoteFormIfEmpty();
+  keywordInput.addEventListener("input", function () {
+    const keyword = this.value.trim();
+
+    clearTimeout(debounceTimer);
+
+    if (!keyword) {
+      searchResult.innerHTML = "";
+      selectedUser = null;
+      return;
+    }
+
+    debounceTimer = setTimeout(() => {
+      fetch(`${window.contextPath}/user/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("ユーザー検索に失敗しました");
+          }
+          return response.json();
+        })
+        .then(users => {
+          searchResult.innerHTML = "";
+
+          if (!users || users.length === 0) {
+            searchResult.innerHTML = '<div class="search-empty">該当ユーザーがいません</div>';
+            selectedUser = null;
+            return;
+          }
+
+          users.forEach(user => {
+            const item = document.createElement("div");
+            item.className = "search-result-item";
+            item.textContent = `${user.name} (${user.email})`;
+
+            item.addEventListener("click", () => {
+              selectedUser = user;
+              keywordInput.value = `${user.name} (${user.email})`;
+              searchResult.innerHTML = "";
+            });
+
+            searchResult.appendChild(item);
+          });
+        })
+        .catch(error => {
+          console.error("ユーザー検索エラー", error);
+        });
+    }, 300);
+  });
+
+  addButton.addEventListener("click", function () {
+    if (!selectedUser) {
+      alert("候補からユーザーを選択してください");
+      return;
+    }
+
+    const userId = String(selectedUser.id);
+
+    if (addedUsers.has(userId)) {
+      alert("このユーザーはすでに追加されています");
+      return;
+    }
+
+    addedUsers.set(userId, selectedUser);
+    renderAddedUsers();
+
+    keywordInput.value = "";
+    searchResult.innerHTML = "";
+    selectedUser = null;
+    closeAllPopovers();
+  });
+
+  function renderAddedUsers() {
+    preview.innerHTML = "";
+    hiddenContainer.innerHTML = "";
+
+    const names = [];
+
+    addedUsers.forEach(user => {
+      names.push(user.name);
+
+      const chip = document.createElement("div");
+      chip.className = "member-chip";
+      chip.innerHTML = `
+        <span>${user.name}</span>
+        <button type="button" class="remove-member-button" data-user-id="${user.id}">×</button>
+      `;
+      preview.appendChild(chip);
+
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "sharedUserIds";
+      hidden.value = user.id;
+      hiddenContainer.appendChild(hidden);
+    });
+
+    // タイトルとツールの間にも即時反映
+    if (inlineDisplay && container.dataset.mode === "create") {
+      if (names.length > 0) {
+        inlineDisplay.innerHTML = `<i class="fas fa-users"></i> ${names.join("、")}`;
+      } else {
+        inlineDisplay.innerHTML = "";
+      }
+    }
+
+    preview.querySelectorAll(".remove-member-button").forEach(button => {
+      button.addEventListener("click", function () {
+        const userId = this.dataset.userId;
+        addedUsers.delete(userId);
+        renderAddedUsers();
+      });
+    });
+  }
+
+  return {
+    setUsers(users) {
+      addedUsers.clear();
+
+      if (!users || users.length === 0) {
+        renderAddedUsers();
+        return;
+      }
+
+      users.forEach(user => {
+        addedUsers.set(String(user.id), user);
+      });
+
+      renderAddedUsers();
+    },
+    clearUsers() {
+      addedUsers.clear();
+      renderAddedUsers();
+    }
+  };
+}
+
+//==member selector初期化
+document.querySelectorAll(".member-selector").forEach(container => {
+  const api = initMemberSelector(container);
+
+  if (container.dataset.mode === "create") {
+    window.createMemberSelectorApi = api;
   }
 });
 

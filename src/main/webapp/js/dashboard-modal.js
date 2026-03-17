@@ -14,6 +14,7 @@ const editImagePreviewArea = document.getElementById("editImagePreviewArea");
 const editImagePreviewList = document.getElementById("editImagePreviewList");
 
 const editDeleteButton = document.getElementById("editDeleteButton");
+const editSharedUsersText = document.getElementById("editSharedUsersText");
 
 const noteCards = document.getElementsByClassName("note-card");
 
@@ -32,6 +33,11 @@ if (
     "color-green",
     "color-pink"
   ];
+
+  const editMemberSelector = document.querySelector('#editMemberPopover .member-selector');
+  if (editMemberSelector && typeof initMemberSelector === "function") {
+    window.editMemberSelectorApi = initMemberSelector(editMemberSelector);
+  }
 
   function getEditPopoverButtons() {
     return editNoteForm.querySelectorAll("[data-edit-popover]");
@@ -60,7 +66,6 @@ if (
 
   function clearEditChipActive() {
     const editColorChips = getEditColorChips();
-
     for (let i = 0; i < editColorChips.length; i++) {
       editColorChips[i].classList.remove("active");
     }
@@ -77,7 +82,6 @@ if (
     }
 
     const targetChip = editNoteForm.querySelector(selector);
-
     if (targetChip) {
       targetChip.classList.add("active");
     }
@@ -219,7 +223,6 @@ if (
           }
 
           renderUnifiedPreview(existingImageIdList);
-          return;
         }
       };
     }
@@ -271,7 +274,7 @@ if (
     }
 
     for (let j = 0; j < selectedNewFiles.length; j++) {
-      (function (file, index) {
+      ((file, index) => {
         const reader = new FileReader();
 
         reader.onload = function (e) {
@@ -298,65 +301,89 @@ if (
     bindPreviewRemoveEvents();
   }
 
-  function openEditModalByAjax(taskId) {
-    fetch(window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId))
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("タスク詳細の取得に失敗しました");
+  function renderEditSharedUsers(sharedUsers) {
+    if (!editSharedUsersText) {
+      return;
+    }
+
+    if (!sharedUsers || sharedUsers.length === 0) {
+      editSharedUsersText.innerHTML = "";
+      return;
+    }
+
+    const names = sharedUsers.map(user => user.name).join("、");
+    editSharedUsersText.innerHTML = `<i class="fas fa-users"></i>: ${names}`;
+  }
+
+  async function openEditModalByAjax(taskId) {
+    try {
+      const response = await fetch(
+        window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
+      );
+
+      if (!response.ok) {
+        throw new Error("タスク詳細の取得に失敗しました");
+      }
+
+      const task = await response.json();
+      console.log("task detail =", task);
+      console.log("sharedUsers =", task.sharedUsers);
+
+      editTargetId.value = task.id || "";
+      editNoteTitle.value = task.title || "";
+      editNoteContent.value = task.content || "";
+
+      if (editNoteColorId) {
+        editNoteColorId.value = task.colorId || 1;
+      }
+
+      if (editDeleteImageIds) {
+        editDeleteImageIds.value = "";
+      }
+
+      selectedNewFiles = [];
+      if (editNoteImage) {
+        editNoteImage.value = "";
+      }
+
+      const colorClass = getColorClassByColorId(task.colorId);
+      setEditFormColor(colorClass);
+      setActiveEditChipByColor(colorClass);
+
+      renderUnifiedPreview(task.imageIdList || []);
+      renderEditSharedUsers(task.sharedUsers || []);
+
+      if (window.editMemberSelectorApi) {
+        window.editMemberSelectorApi.setUsers(task.sharedUsers || []);
+      }
+
+      if (editDeleteButton) {
+        if (task.isOwner) {
+          editDeleteButton.textContent = "削除";
+          editDeleteButton.dataset.deleteMode = "owner";
+        } else {
+          editDeleteButton.textContent = "共有を解除";
+          editDeleteButton.dataset.deleteMode = "member";
         }
-        return response.json();
-      })
-      .then(function (task) {
-        editTargetId.value = task.id || "";
-        editNoteTitle.value = task.title || "";
-        editNoteContent.value = task.content || "";
+      }
 
-        if (editNoteColorId) {
-          editNoteColorId.value = task.colorId || 1;
-        }
+      closeEditPopovers();
+      editModalOverlay.classList.add("show");
 
-        if (editDeleteImageIds) {
-          editDeleteImageIds.value = "";
-        }
-
-        selectedNewFiles = [];
-        if (editNoteImage) {
-          editNoteImage.value = "";
-        }
-
-        const colorClass = getColorClassByColorId(task.colorId);
-        setEditFormColor(colorClass);
-        setActiveEditChipByColor(colorClass);
-
-        renderUnifiedPreview(task.imageIdList || []);
-
-        if (editDeleteButton) {
-          if (task.isOwner) {
-            editDeleteButton.textContent = "削除";
-            editDeleteButton.dataset.deleteMode = "owner";
-          } else {
-            editDeleteButton.textContent = "共有を解除";
-            editDeleteButton.dataset.deleteMode = "member";
-          }
-        }
-
-        closeEditPopovers();
-        editModalOverlay.classList.add("show");
-      })
-      .catch(function (error) {
-        console.error(error);
-        alert("タスク詳細の取得に失敗しました。");
-      });
+    } catch (error) {
+      console.error("タスク詳細取得エラー:", error);
+      alert("タスク詳細の取得に失敗しました。");
+    }
   }
 
   for (let i = 0; i < noteCards.length; i++) {
-    noteCards[i].addEventListener("click", function () {
+    noteCards[i].addEventListener("click", async function () {
       const noteId = this.getAttribute("data-note-id");
       if (!noteId) {
         return;
       }
 
-      openEditModalByAjax(noteId);
+      await openEditModalByAjax(noteId);
     });
   }
 

@@ -39,8 +39,9 @@ public class LoginServlet extends HttpServlet {
         }
 
         UserDAO userDAO = new UserDAO();
+        System.out.println("login実行前");
         UserDTO loginUser = userDAO.login(email, password);
-
+        System.out.println("login実行後");
         if (loginUser == null) {
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
@@ -54,11 +55,12 @@ public class LoginServlet extends HttpServlet {
             rd.forward(request, response);
             return;
         }
-
+        System.out.println("ログイン成功");
         HttpSession session = request.getSession();
         loginUser.setPassword(null);
         session.setAttribute("loginUser", loginUser);
-
-        response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+        
+        System.out.println("redirect前");
+        response.sendRedirect(request.getContextPath() + "/dashboard");
     }
 }

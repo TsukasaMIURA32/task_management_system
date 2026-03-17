@@ -2,9 +2,7 @@ package task_management_system.com.task_management.controller.task;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -18,115 +16,70 @@ import jakarta.servlet.http.Part;
 import task_management_system.com.task_management.dao.TaskDAO;
 import task_management_system.com.task_management.dao.TaskUserDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
+import task_management_system.com.task_management.dto.UserDTO;
 
-/**
- * Servlet implementation class TaskCreateServlet
- */
-@WebServlet(name = "TaskCreateServlet",urlPatterns = "/task/create")
+@WebServlet(name = "TaskCreateServlet", urlPatterns = "/task/create")
 @MultipartConfig
 public class TaskCreateServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public TaskCreateServlet() {
-        super();
-        // TODO Auto-generated constructor stub
+    private TaskDAO taskDAO = new TaskDAO();
+    private TaskUserDAO taskUserDAO = new TaskUserDAO();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        HttpSession session = request.getSession(false);
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+        System.out.println("=== TaskCreateServlet ===");
+        System.out.println("session loginUser = " + loginUser);
+
+//        if (loginUser != null) {
+//            System.out.println("loginUser id = " + loginUser.getId());
+//            System.out.println("loginUser name = " + loginUser.getUserName());
+//            System.out.println("loginUser email = " + loginUser.getEmail());
+//        }
+		
+		request.setAttribute("loginUser", loginUser);
+
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
+        String colorIdStr = request.getParameter("colorId");
+        String[] sharedUserIds = request.getParameterValues("sharedUserIds");
+
+        int colorId = 1;
+        if (colorIdStr != null && !colorIdStr.isBlank()) {
+            colorId = Integer.parseInt(colorIdStr);
+        }
+
+        TaskDTO dto = new TaskDTO();
+        dto.setOwnerId(loginUser.getId());
+//        System.out.println("dto ownerId = " + dto.getOwnerId());
+        dto.setTitle(title);
+        dto.setContent(content);
+        dto.setOwnerId(loginUser.getId());
+        dto.setColorId(colorId);
+
+        // 1. tasks 登録
+        int taskId = taskDAO.insert(dto);
+
+        if (taskId > 0) {
+            // 2. tasks_users 登録
+            taskUserDAO.insertTaskUsers(taskId, sharedUserIds, loginUser.getId());
+
+            // 3. 画像登録
+            Collection<Part> parts = request.getParts();
+            for (Part part : parts) {
+                if ("image".equals(part.getName()) && part.getSize() > 0) {
+                    try (InputStream is = part.getInputStream()) {
+                        taskDAO.insertTaskImage(taskId, is);
+                    }
+                }
+            }
+        }
+
+        response.sendRedirect(request.getContextPath() + "/dashboard");
     }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-	        throws ServletException, IOException {
-
-	    request.setCharacterEncoding("UTF-8");
-
-	    HttpSession session = request.getSession();
-
-	    // 仮ログイン用
-	    if (session.getAttribute("loginUserId") == null) {
-	        session.setAttribute("loginUserId", 1);
-	    }
-
-	    Integer loginUserId = (Integer) session.getAttribute("loginUserId");
-
-	    if (loginUserId == null) {
-	        response.sendRedirect(request.getContextPath() + "/login.jsp");
-	        return;
-	    }
-
-	    String title = request.getParameter("title");
-	    String content = request.getParameter("content");
-	    String colorIdStr = request.getParameter("colorId");
-
-	    Collection<Part> parts = request.getParts();
-	    List<Part> imageParts = new ArrayList<>();
-
-	    System.out.println("parts size = " + parts.size());
-
-	    for (Part part : parts) {
-	        System.out.println("part name = " + part.getName() + ", size = " + part.getSize());
-	        if ("image".equals(part.getName()) && part.getSize() > 0) {
-	            imageParts.add(part);
-	        }
-	    }
-
-	    System.out.println("imageParts size = " + imageParts.size());
-
-	    if (imageParts.size() > 4) {
-	        imageParts = imageParts.subList(0, 4);
-	    }
-
-	    boolean hasTitle = title != null && !title.trim().isEmpty();
-	    boolean hasContent = content != null && !content.trim().isEmpty();
-	    boolean hasImage = !imageParts.isEmpty();
-
-	    // 全部空なら保存しない
-	    if (!hasTitle && !hasContent && !hasImage) {
-	        response.sendRedirect(request.getContextPath() + "/dashboard");
-	        return;
-	    }
-
-	    int colorId = 1;
-	    if (colorIdStr != null && !colorIdStr.isEmpty()) {
-	        try {
-	            colorId = Integer.parseInt(colorIdStr);
-	        } catch (NumberFormatException e) {
-	            colorId = 1;
-	        }
-	    }
-
-	    TaskDTO dto = new TaskDTO();
-	    dto.setTitle(title);
-	    dto.setContent(content);
-	    dto.setOwnerId(loginUserId);
-	    dto.setColorId(colorId);
-
-	    TaskDAO taskDAO = new TaskDAO();
-	    TaskUserDAO taskUserDAO = new TaskUserDAO();
-
-	    int taskId = taskDAO.insert(dto);
-
-	    if (taskId > 0) {
-	        // owner を tasks_users にも追加
-	        taskUserDAO.insertTaskUser(taskId, loginUserId);
-
-	        // 画像保存
-	        for (Part imagePart : imageParts) {
-	            try (InputStream inputStream = imagePart.getInputStream()) {
-	                taskDAO.insertTaskImage(taskId, inputStream);
-	            }
-	        }
-	    }
-
-	    response.sendRedirect(request.getContextPath() + "/dashboard");
-	}
 }

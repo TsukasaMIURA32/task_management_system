@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import task_management_system.com.task_management.dao.TaskDAO;
 import task_management_system.com.task_management.dao.TaskUserDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
+import task_management_system.com.task_management.dto.UserDTO;
 
 @WebServlet(name = "TaskDeleteServlet", urlPatterns = "/task/delete")
 public class TaskDeleteServlet extends HttpServlet {
@@ -23,13 +24,16 @@ public class TaskDeleteServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loginUserId") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
+        HttpSession session = request.getSession();
+		UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+		if (loginUser == null) {
+			response.sendRedirect("login.jsp");
+			return;
+		}
 
-        int loginUserId = (Integer) session.getAttribute("loginUserId");
+		int loginUserId = loginUser.getId();
+		
+		request.setAttribute("loginUser", loginUser);
 
         String taskIdStr = request.getParameter("taskId");
         if (taskIdStr == null || taskIdStr.isBlank()) {

@@ -17,6 +17,18 @@ public class UserDTO extends BaseDTO {
 
     public void setUserId(int userId) {
         this.userId = userId;
+        super.setId(userId);
+    }
+    
+    @Override
+    public int getId() {
+        return userId; // userIdを正として返す
+    }
+
+    @Override
+    public void setId(int id) {
+        this.id = id;
+        this.userId = id; // userIdにも反映
     }
 
     public String getUserName() {
