@@ -124,14 +124,22 @@ public class UserDAO extends BaseDAO<UserDTO> {
     public UserDTO login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
+        System.out.println("UserDAO.login start");
+
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
+            System.out.println("DB接続OK");
 
             ps.setString(1, email);
             ps.setString(2, password);
 
+            System.out.println("SQL実行前");
+
             try (ResultSet rs = ps.executeQuery()) {
+                System.out.println("SQL実行後");
                 if (rs.next()) {
+                    System.out.println("ユーザー見つかった");
                     return mapRow(rs);
                 }
             }
@@ -141,6 +149,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
             e.printStackTrace();
         }
 
+        System.out.println("ユーザー見つからず");
         return null;
     }
 
@@ -161,4 +170,6 @@ public class UserDAO extends BaseDAO<UserDTO> {
             return false;
         }
     }
+    
+    
 }

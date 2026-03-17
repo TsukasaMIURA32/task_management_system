@@ -36,15 +36,38 @@ public class LoginServlet extends HttpServlet {
         UserDAO dao = new UserDAO();
         UserDTO user = dao.login(email, password);
 
+
+        UserDAO userDAO = new UserDAO();
+        UserDTO loginUser = userDAO.login(email, password);
+
+        if (loginUser == null) {
+
         if (user != null) {
             HttpSession session = request.getSession();
             session.setAttribute("loginUser", user);
 
             response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
         } else {
+
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
         }
+
+
+        if ("pending_admin".equals(loginUser.getRole())) {
+            request.setAttribute("error", "管理ユーザーは現在承認待ちです。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
+
+        HttpSession session = request.getSession();
+        loginUser.setPassword(null);
+        session.setAttribute("loginUser", loginUser);
+        
+
+        response.sendRedirect(request.getContextPath() + "/dashboard");
+
     }
 }

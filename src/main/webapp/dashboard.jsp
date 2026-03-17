@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="java.util.List"%>
 <%@ page import="task_management_system.com.task_management.dto.TaskDTO"%>
+<%@ page import="task_management_system.com.task_management.dto.UserDTO"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -82,16 +83,20 @@
 							<button type="button" id="removeImageButton"
 								class="remove-image-button">×</button>
 						</div>
-						<input type="text" id="noteTitle" name="title" placeholder="タイトル">
-						<div class="textarea-wrap">
-							<textarea id="noteContent" name="content" placeholder="メモを入力..."></textarea>
-
-							<label for="noteImage" class="image-upload-button"
-								id="imageUploadButton"> <i class="far fa-image"></i>
-							</label> <input type="file" id="noteImage" name="image" accept="image/*"
-								multiple hidden>
+						<div class="task-content-box">
+							<input type="text" id="noteTitle" name="title" placeholder="タイトル">
+							<div class="textarea-wrap">
+								<textarea id="noteContent" name="content" placeholder="メモを入力..."></textarea>
+	
+								<label for="noteImage" class="image-upload-button"
+									id="imageUploadButton"> <i class="far fa-image"></i>
+								</label> <input type="file" id="noteImage" name="image" accept="image/*"
+									multiple hidden>
+							</div>
+							
+							<div class="shared-users-inline" id="sharedUsersInline"></div>
 						</div>
-
+						
 						<div class="form-actions">
 							<div class="note-tools">
 								<button type="button" class="tool-button" aria-label="装飾">
@@ -162,11 +167,17 @@
 								<input type="hidden" id="noteColorId" name="colorId" value="1">
 								<!-- メンバー追加 -->
 								<div class="popover-panel" id="memberPopover">
-									<div class="mini-form">
-										<input type="text" id="memberNameInput" placeholder="メンバー名を入力">
-										<button type="button" id="addMemberButton">追加</button>
+									<div class="member-selector" data-mode="create">
+										<div class="mini-form">
+											<input type="text" class="member-keyword-input"
+												placeholder="名前またはメールアドレスを入力">
+											<button type="button" class="add-member-button">追加</button>
+										</div>
+								
+										<div class="member-search-result"></div>
+										<div class="member-preview"></div>
+										<div class="shared-user-ids-container"></div>
 									</div>
-									<div id="memberPreview" class="member-preview"></div>
 								</div>
 
 								<!-- 詳細メニュー -->
@@ -246,9 +257,27 @@
 							<%
 							}
 							%>
-
-							<h3><%=task.getTitle() == null ? "" : task.getTitle()%></h3>
-							<p><%=task.getContent() == null ? "" : task.getContent()%></p>
+							<div class="task-content-box">
+								<h3><%=task.getTitle() == null ? "" : task.getTitle()%></h3>
+								<p><%=task.getContent() == null ? "" : task.getContent()%></p>
+								<%
+								List<UserDTO> sharedUserList = task.getSharedUserList();
+								if (sharedUserList != null && !sharedUserList.isEmpty()) {
+									StringBuilder sharedNames = new StringBuilder();
+									for (int i = 0; i < sharedUserList.size(); i++) {
+										sharedNames.append(sharedUserList.get(i).getUserName());
+										if (i < sharedUserList.size() - 1) {
+											sharedNames.append("、");
+										}
+									}
+								%>
+									<div class="shared-users-text">
+										<i class="fas fa-users"></i>: <%= sharedNames.toString() %>
+									</div>
+								<%
+								}
+								%>
+							</div>
 						</article>
 						<%
 						}

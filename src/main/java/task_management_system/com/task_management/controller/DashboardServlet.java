@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.TaskDAO;
-import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.TaskDTO;
 import task_management_system.com.task_management.dto.UserDTO;
 
@@ -24,32 +23,31 @@ public class DashboardServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
+		UserDTO loginUser = null;
 
-		// 仮ログイン用（あとで削除）
-		if (session.getAttribute("loginUserId") == null) {
-			session.setAttribute("loginUserId",1);
+		if (session != null) {
+		    loginUser = (UserDTO) session.getAttribute("loginUser");
 		}
 
-		Integer loginUserId = (Integer) session.getAttribute("loginUserId");
-
-		if (loginUserId == null) {
-			response.sendRedirect("login.jsp");
-			return;
+		if (loginUser == null) {
+		    response.sendRedirect(request.getContextPath() + "/login.jsp");
+		    return;
 		}
-		
-		UserDAO userDAO = new UserDAO();
-		UserDTO loginUser = userDAO.getById(loginUserId);
-
+		int loginUserId = loginUser.getId();
+		System.out.println("Login success user = " + loginUser);
+		System.out.println("session id at login = " + request.getSession().getId());
+				
 		request.setAttribute("loginUser", loginUser);
 
 		TaskDAO dao = new TaskDAO();
 		List<TaskDTO> taskList = dao.getTasksByUserId(loginUserId);
+//		List<TaskDTO> taskList = dao.getTasksByOwnerId(loginUserId);
 
 		request.setAttribute("taskList", taskList);
 //		System.out.println("taskList size = " + taskList.size());
 
-		RequestDispatcher dispatcher = request.getRequestDispatcher("dashboard.jsp");
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/dashboard.jsp");
 		dispatcher.forward(request, response);
 	}
 }

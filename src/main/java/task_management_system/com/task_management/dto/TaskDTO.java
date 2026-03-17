@@ -11,6 +11,7 @@ public class TaskDTO extends BaseDTO{
 	private int colorId;
 	private boolean hasImage;
 	private List<Integer> imageIdList = new ArrayList<>();
+	private List<UserDTO> sharedUserList;
 
 	
 
@@ -53,6 +54,14 @@ public class TaskDTO extends BaseDTO{
 
 	public void setImageIdList(List<Integer> imageIdList) {
 		this.imageIdList = imageIdList;
+	}
+
+	public List<UserDTO> getSharedUserList() {
+		return sharedUserList;
+	}
+
+	public void setSharedUserList(List<UserDTO> sharedUserList) {
+		this.sharedUserList = sharedUserList;
 	}
 
 	

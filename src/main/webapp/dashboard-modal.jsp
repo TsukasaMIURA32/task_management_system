@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="java.util.List"%>
 <%@ page import="task_management_system.com.task_management.dto.TaskDTO"%>
+<%@ page import="task_management_system.com.task_management.dto.UserDTO"%>
 <%
 TaskDTO editTask = (TaskDTO) request.getAttribute("editTask");
 
@@ -54,14 +55,15 @@ if (editTask != null && editTask.getImageIdList() != null) {
 
 			<input type="file" id="editNoteImage" name="newImages"
 				accept="image/*" multiple hidden>
-
-			<input type="text" id="editNoteTitle" name="title" placeholder="タイトル"
-				value="<%=editTask != null && editTask.getTitle() != null ? editTask.getTitle() : ""%>">
-
-			<div class="textarea-wrap">
-				<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
+			<div class="task-content-box">
+				<input type="text" id="editNoteTitle" name="title" placeholder="タイトル"
+					value="<%=editTask != null && editTask.getTitle() != null ? editTask.getTitle() : ""%>">
+	
+				<div class="textarea-wrap">
+					<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
+				</div>
+				<div class="shared-users-text" id="editSharedUsersText"></div>
 			</div>
-
 			<div class="form-actions">
 				<div class="note-tools">
 					<button type="button" class="tool-button" aria-label="装飾">
@@ -116,13 +118,19 @@ if (editTask != null && editTask.getImageIdList() != null) {
 								data-edit-color="color-pink"></button>
 						</div>
 					</div>
-
+					<!-- メンバー追加 -->
 					<div class="popover-panel" id="editMemberPopover">
-						<div class="mini-form">
-							<input type="text" id="memberNameInput" placeholder="メンバー名を入力">
-							<button type="button" id="editAddMemberButton">追加</button>
+						<div class="member-selector" data-mode="edit">
+							<div class="mini-form">
+								<input type="text" class="member-keyword-input"
+									placeholder="名前またはメールアドレスを入力">
+								<button type="button" class="add-member-button">追加</button>
+							</div>
+					
+							<div class="member-search-result"></div>
+							<div class="member-preview"></div>
+							<div class="shared-user-ids-container"></div>
 						</div>
-						<div id="memberPreview" class="member-preview"></div>
 					</div>
 
 					<div class="popover-panel" id="editMorePopover">
