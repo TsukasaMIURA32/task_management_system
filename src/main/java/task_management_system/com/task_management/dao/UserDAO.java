@@ -129,27 +129,27 @@ public class UserDAO extends BaseDAO<UserDTO> {
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            System.out.println("DB接続OK");
+//            System.out.println("DB接続OK");
 
             ps.setString(1, email);
             ps.setString(2, password);
 
-            System.out.println("SQL実行前");
+//            System.out.println("SQL実行前");
 
             try (ResultSet rs = ps.executeQuery()) {
-                System.out.println("SQL実行後");
+//                System.out.println("SQL実行後");
                 if (rs.next()) {
-                    System.out.println("ユーザー見つかった");
+//                    System.out.println("ユーザー見つかった");
                     return mapRow(rs);
                 }
             }
 
         } catch (SQLException e) {
-            System.out.println("ログインSQLエラー");
+//            System.out.println("ログインSQLエラー");
             e.printStackTrace();
         }
 
-        System.out.println("ユーザー見つからず");
+//        System.out.println("ユーザー見つからず");
         return null;
     }
 
