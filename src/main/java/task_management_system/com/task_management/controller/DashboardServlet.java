@@ -22,7 +22,7 @@ public class DashboardServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
+//		System.out.println("dashboard");
 		HttpSession session = request.getSession(false);
 		UserDTO loginUser = null;
 
@@ -35,8 +35,8 @@ public class DashboardServlet extends HttpServlet {
 		    return;
 		}
 		int loginUserId = loginUser.getId();
-		System.out.println("Login success user = " + loginUser);
-		System.out.println("session id at login = " + request.getSession().getId());
+//		System.out.println("Login success user = " + loginUser);
+//		System.out.println("session id at login = " + request.getSession().getId());
 				
 		request.setAttribute("loginUser", loginUser);
 

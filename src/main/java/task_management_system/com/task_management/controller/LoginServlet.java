@@ -41,12 +41,12 @@ public class LoginServlet extends HttpServlet {
         UserDTO loginUser = userDAO.login(email, password);
 
         if (loginUser == null) {
-
+        	response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+        }
+        
         if (user != null) {
             HttpSession session = request.getSession();
-            session.setAttribute("loginUser", user);
-
-            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            session.setAttribute("loginUser", user);           
         } else {
 
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
