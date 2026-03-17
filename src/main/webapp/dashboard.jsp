@@ -41,7 +41,7 @@
 						aria-label="ユーザーメニュー">
 						<i class="fas fa-user-circle"></i>
 					</button>
-					<jsp:include page="user-menu.jsp" />
+					<jsp:include page="_user-menu.jsp" />
 
 				</div>
 			</div>
@@ -295,7 +295,7 @@
 <!--			</form>-->
 		</main>
 
-		<jsp:include page="dashboard-modal.jsp" />
+		<jsp:include page="_dashboard-modal.jsp" />
 <!--		==========================================================================グループメンバー追加モーダル-->
 		<div class="member-modal-overlay" id="createMemberModalOverlay">
 			<div class="member-modal">

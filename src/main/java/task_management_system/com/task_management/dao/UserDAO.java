@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import task_management_system.com.task_management.dto.UserDTO;
 import task_management_system.com.task_management.util.DBCon;
@@ -169,6 +171,67 @@ public class UserDAO extends BaseDAO<UserDTO> {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    /**
+     * 指定したroleのユーザー一覧を取得する
+     */
+    public List<UserDTO> findUsersByRole(int role) {
+        List<UserDTO> userList = new ArrayList<>();
+
+        String sql = "SELECT * FROM users WHERE role = ? ORDER BY id ASC";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, role);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    userList.add(mapRow(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("権限別ユーザー一覧取得SQLエラー");
+            e.printStackTrace();
+        }
+
+        return userList;
+    }
+
+    /**
+     * 指定したroleのユーザーを、名前またはメールアドレスで検索する
+     */
+    public List<UserDTO> searchUsersByRoleAndKeyword(int role, String keyword) {
+        List<UserDTO> userList = new ArrayList<>();
+
+        String sql = "SELECT * FROM users "
+                   + "WHERE role = ? "
+                   + "AND (name LIKE ? OR email LIKE ?) "
+                   + "ORDER BY id ASC";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            String searchKeyword = "%" + keyword + "%";
+
+            ps.setInt(1, role);
+            ps.setString(2, searchKeyword);
+            ps.setString(3, searchKeyword);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    userList.add(mapRow(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("権限別ユーザー検索SQLエラー");
+            e.printStackTrace();
+        }
+
+        return userList;
     }
     
     
