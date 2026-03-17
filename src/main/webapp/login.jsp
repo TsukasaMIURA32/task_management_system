@@ -41,9 +41,9 @@
         </form>
 
         <div class="auth-links">
-            <p><a href="register.jsp">アカウント作成</a></p>
-            <p><a href="resetPassword.jsp">パスワードを忘れた方</a></p>
-        </div>
+    <p><a href="<%= request.getContextPath() %>/register">アカウント作成</a></p>
+    <p><a href="<%= request.getContextPath() %>/resetPassword">パスワードを忘れた方</a></p>
+</div>
 
     </div>
 </div>
