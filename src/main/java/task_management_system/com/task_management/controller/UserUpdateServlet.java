@@ -26,14 +26,18 @@ public class UserUpdateServlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
         HttpSession session = request.getSession(false);
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        
+      System.out.println("=== UserUpdateServlet ===");
+      System.out.println("session loginUser = " + loginUser);
 
-        if (session == null || session.getAttribute("loginUserId") == null) {
+        if (session == null || session.getAttribute("loginUser") == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             out.print("{\"success\":false,\"message\":\"ログイン情報がありません。\"}");
             return;
         }
 
-        Integer loginUserId = (Integer) session.getAttribute("loginUserId");
+        request.setAttribute("loginUser", loginUser);
 
         String userName = request.getParameter("userName");
         String email = request.getParameter("email");
@@ -61,7 +65,7 @@ public class UserUpdateServlet extends HttpServlet {
         }
 
         UserDTO user = new UserDTO();
-        user.setId(loginUserId);
+        user.setId(loginUser.getId());
         user.setUserName(userName);
         user.setEmail(email);
 
@@ -74,7 +78,7 @@ public class UserUpdateServlet extends HttpServlet {
             return;
         }
 
-        UserDTO updatedUser = userDAO.getById(loginUserId);
+        UserDTO updatedUser = userDAO.getById(loginUser.getId());
 
         out.print("{");
         out.print("\"success\":true,");
