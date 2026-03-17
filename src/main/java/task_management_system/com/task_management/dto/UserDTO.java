@@ -2,21 +2,13 @@ package task_management_system.com.task_management.dto;
 
 public class UserDTO extends BaseDTO {
 
-    private int userId;
+
     private String userName;
     private String email;
     private String password;
-    private String role;
+    private int role;
 
     public UserDTO() {
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 
     public String getUserName() {
@@ -43,11 +35,11 @@ public class UserDTO extends BaseDTO {
         this.password = password;
     }
 
-    public String getRole() {
+    public int getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(int role) {
         this.role = role;
     }
 }
