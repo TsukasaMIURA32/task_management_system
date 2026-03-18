@@ -234,5 +234,45 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return userList;
     }
     
+    /**
+     * 指定したユーザーの role を更新する
+     */
+    public int updateRole(int userId, int role) {
+        String sql = "UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, role);
+            ps.setInt(2, userId);
+
+            return ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("権限更新SQLエラー");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    
+    public int countAdminUsers() {
+    	String sql = "SELECT COUNT(*) FROM users WHERE role = 1";
+
+    	try (Connection conn = DBCon.getConnection();
+    		 PreparedStatement ps = conn.prepareStatement(sql);
+    		 ResultSet rs = ps.executeQuery()) {
+
+    		if (rs.next()) {
+    			return rs.getInt(1);
+    		}
+
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+
+    	return 0;
+    }
+    
     
 }

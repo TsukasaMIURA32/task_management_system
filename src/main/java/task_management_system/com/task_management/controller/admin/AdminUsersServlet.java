@@ -3,96 +3,103 @@ package task_management_system.com.task_management.controller.admin;
 import java.io.IOException;
 import java.util.List;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
 
 /**
- * ユーザー管理画面の一覧表示を行うサーブレット
- * 
- * viewType=registered
- *   → 一般ユーザー一覧(role=0)を表示
- * 
- * viewType=admin
- *   → 管理者申請中一覧(role=2) + 管理ユーザー一覧(role=1)を表示
+ * 管理画面のユーザー一覧表示用サーブレット
  */
-@WebServlet(name="/AdminUsersServlet", urlPatterns="/admin/users")
+@WebServlet(name="AdminUsersServlet", urlPatterns="/admin/users")
 public class AdminUsersServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public AdminUsersServlet() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
     @Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-		/* 画面の表示切り替え用パラメータ */
-		String viewType = request.getParameter("viewType");
+        /* =========================
+           ログインチェック
+        ========================= */
+        HttpSession session = request.getSession(false);
 
-		/* 未指定なら一般ユーザー一覧を表示 */
-		if (viewType == null || viewType.isBlank()) {
-			viewType = "registered";
-		}
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
-		UserDAO userDAO = new UserDAO();
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
-		/* JSP側でサイドバーの active 判定などに使う */
-		request.setAttribute("viewType", viewType);
+        if (loginUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
-		/* =========================
-		   一般ユーザー一覧
-		========================= */
-		if ("registered".equals(viewType)) {
-			String keyword = request.getParameter("keyword");
+        /* 管理者(role=1)以外は管理画面に入れない */
+        if (loginUser.getRole() != 1) {
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
 
-			/* 入力値を検索欄に戻すために保持 */
-			request.setAttribute("keyword", keyword);
+        /* =========================
+           パラメータ取得
+        ========================= */
+        String viewType = request.getParameter("viewType");
+        String keyword = request.getParameter("keyword");
 
-			List<UserDTO> registeredUserList;
+        if (viewType == null || viewType.isBlank()) {
+            viewType = "registered";
+        }
 
-			if (keyword != null && !keyword.isBlank()) {
-				registeredUserList = userDAO.searchUsersByRoleAndKeyword(0, keyword);
-			} else {
-				registeredUserList = userDAO.findUsersByRole(0);
-			}
+        UserDAO userDAO = new UserDAO();
 
-			request.setAttribute("registeredUserList", registeredUserList);
-		}
+        /* JSPで今どっちの一覧を表示しているか判定するため */
+        request.setAttribute("viewType", viewType);
 
-		/* =========================
-		   管理ユーザー一覧
-		========================= */
-		if ("admin".equals(viewType)) {
-			List<UserDTO> pendingAdminList = userDAO.findUsersByRole(2);
-			List<UserDTO> adminUserList = userDAO.findUsersByRole(1);
+        /* =========================
+           登録ユーザー一覧
+        ========================= */
+        if ("registered".equals(viewType)) {
+            List<UserDTO> registeredUserList;
 
-			request.setAttribute("pendingAdminList", pendingAdminList);
-			request.setAttribute("adminUserList", adminUserList);
-		}
+            /* 検索ワードがあるときは検索、ないときは一覧取得 */
+            if (keyword != null && !keyword.isBlank()) {
+                registeredUserList = userDAO.searchUsersByRoleAndKeyword(0, keyword);
+            } else {
+                registeredUserList = userDAO.findUsersByRole(0);
+            }
 
-		request.getRequestDispatcher("/admin-user-list.jsp").forward(request, response);
-	}
+            request.setAttribute("registeredUserList", registeredUserList);
+        }
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
+        /* =========================
+           管理ユーザー一覧
+        ========================= */
+	     //  常に申請中管理ユーザーを取得
+	        List<UserDTO> pendingAdminList = userDAO.findUsersByRole(2);
+	        request.setAttribute("pendingAdminList", pendingAdminList);
+	        request.setAttribute("pendingCount", pendingAdminList.size());
+	
+	        // admin画面のときだけ管理者一覧を取得
+	        if ("admin".equals(viewType)) {
+	            List<UserDTO> adminUserList = userDAO.findUsersByRole(1);
+	            request.setAttribute("adminUserList", adminUserList);
+	        }
+	        
+	        int adminCount = userDAO.countAdminUsers();
+	        request.setAttribute("adminCount", adminCount);
 
+        /* =========================
+           JSPへフォワード
+        ========================= */
+        RequestDispatcher rd = request.getRequestDispatcher("/admin-user-list.jsp");
+        rd.forward(request, response);
+    }
 }

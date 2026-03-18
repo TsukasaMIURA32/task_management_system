@@ -36,20 +36,13 @@ public class UserDeleteServlet extends HttpServlet {
         TaskUserDAO taskUserDAO = new TaskUserDAO();
         UserDAO userDAO = new UserDAO();
 
-        // 退会ユーザーがownerのタスク一覧を取得
+     // 退会ユーザーがownerのタスク一覧を取得
         List<TaskDTO> ownerTaskList = taskDAO.getTasksByOwnerId(userId);
 
         for (TaskDTO task : ownerTaskList) {
-            int otherMemberCount = taskUserDAO.countOtherMembers(task.getId(), userId);
-
-            if (otherMemberCount == 0) {
-                // 他メンバーがいないならタスクごと削除
-                // task_images と tasks_users も TaskDAO.delete() 内で削除される
-                taskDAO.delete(task.getId());
-            } else {
-                // 他メンバーがいるなら owner を外してタスクは残す
-                taskDAO.clearOwner(task.getId());
-            }
+            // owner_id は NOT NULL のため、他メンバーがいてもタスクごと削除する
+            // task_images と tasks_users も TaskDAO.delete() 内で削除される想定
+            taskDAO.delete(task.getId());
         }
 
         // ユーザー削除

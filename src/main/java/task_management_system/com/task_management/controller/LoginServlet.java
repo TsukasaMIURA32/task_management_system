@@ -13,13 +13,14 @@ import jakarta.servlet.http.HttpSession;
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
 
-@WebServlet("/login")
+@WebServlet(name="LoginServlet", urlPatterns="/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
         rd.forward(request, response);
     }
@@ -34,40 +35,36 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         UserDAO dao = new UserDAO();
-        UserDTO user = dao.login(email, password);
+        UserDTO loginUser = dao.login(email, password);
 
-
-        UserDAO userDAO = new UserDAO();
-        UserDTO loginUser = userDAO.login(email, password);
-
+        // ===== ログイン失敗 =====
         if (loginUser == null) {
-        	response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-        }
-        
-        if (user != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("loginUser", user);           
-        } else {
-
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
+            return;
         }
 
-
-        if ("pending_admin".equals(loginUser.getRole())) {
+        // ===== 管理者申請中 =====
+        if (loginUser.getRole() == 2) {
             request.setAttribute("error", "管理ユーザーは現在承認待ちです。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;
         }
 
+        // ===== セッション保存 =====
         HttpSession session = request.getSession();
         loginUser.setPassword(null);
         session.setAttribute("loginUser", loginUser);
-        
 
-        response.sendRedirect(request.getContextPath() + "/dashboard");
-
+        // ===== 画面振り分け =====
+        if (loginUser.getRole() == 1) {
+            // 管理者
+            response.sendRedirect(request.getContextPath() + "/admin/users");
+        } else {
+            // 一般ユーザー
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+        }
     }
 }

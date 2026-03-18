@@ -28,8 +28,8 @@ public class UserUpdateServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
         
-      System.out.println("=== UserUpdateServlet ===");
-      System.out.println("session loginUser = " + loginUser);
+//      System.out.println("=== UserUpdateServlet ===");
+//      System.out.println("session loginUser = " + loginUser);
 
         if (session == null || session.getAttribute("loginUser") == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
