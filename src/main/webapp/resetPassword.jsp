@@ -28,10 +28,11 @@
                 <input type="email" id="email" name="email" placeholder="example@email.com" required>
             </div>
 
-            <div class="form-group">
-                <label for="newPassword">新しいパスワード</label>
-                <input type="password" id="newPassword" name="newPassword" placeholder="新しいパスワードを入力" required>
-            </div>
+           <div class="form-group">
+        		<label for="newPassword">新しいパスワード</label>
+        		<input type="password" id="newPassword" name="newPassword" required>
+        		<p class="form-hint">※8文字以上で、数字と記号を含めてください</p>
+    		</div>
 
             <div class="form-group">
                 <label for="confirmPassword">新しいパスワード（確認用）</label>
