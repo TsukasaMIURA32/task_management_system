@@ -93,7 +93,7 @@
 .manage-account-btn {
   border: 1px solid #8b9198;
   background: #eef2f7;
-  color: #0b57d0;
+  color: #4285F4;
   border-radius: 999px;
   padding: 12px 28px;
   font-size: 16px;
@@ -156,7 +156,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1185d8;
+  background: #4285F4;
   color: #fff;
   display: flex;
   align-items: center;
@@ -194,7 +194,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0b57d0;
+  color: #4285F4;
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -265,7 +265,7 @@
 }
 
 .save-btn {
-	background-color: #4285f4;
+	background-color: #4285F4;
 	color: #fff;
 }
 
@@ -382,12 +382,12 @@
 }
 
 .save-btn {
-  background-color: #0b57d0;
+  background-color: #4285F4;
   color: #fff;
 }
 
 .save-btn:hover {
-  background-color: #0847ad;
+  background-color: rgb(10, 66, 160);
 }
 
 .cancel-btn {
@@ -457,10 +457,10 @@
 }
 
 .withdraw-confirm-btn {
-	background: #d93025;
+	background: #EA4335;
 	color: #fff;
 }
 
 .withdraw-confirm-btn:hover {
-	background: #b3261e;
+	background: rgb(198, 34, 21);
 }

@@ -63,6 +63,7 @@ if (editTask != null && editTask.getImageIdList() != null) {
 					<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
 				</div>
 				<div class="shared-users-text" id="editSharedUsersText"></div>
+				<div class="update-date" id="updateDate"><%=editTask != null && editTask.getUpdatedAt() != null ? editTask.getUpdatedAt() : ""%></div>
 			</div>
 			<div class="form-actions">
 				<div class="note-tools">
