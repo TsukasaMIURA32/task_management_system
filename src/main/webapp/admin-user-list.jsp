@@ -17,6 +17,8 @@ if (keyword == null) {
 List<UserDTO> registeredUserList = (List<UserDTO>) request.getAttribute("registeredUserList");
 List<UserDTO> pendingAdminList = (List<UserDTO>) request.getAttribute("pendingAdminList");
 List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserList");
+
+UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 %>
 
 <!DOCTYPE html>
@@ -48,7 +50,7 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 					</h1>
 					<div class="app-title">
 						<div class="app-name">Keep</div>
-						<div class="page-subtitle">ユーザー管理</div>
+						<div class="page-subtitle">Admin</div>
 					</div>
 				</div>
 			</div>
@@ -85,6 +87,12 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 						<li class="<%="admin".equals(viewType) ? "active" : ""%>"><a
 							href="<%=request.getContextPath()%>/admin/users?viewType=admin">
 								<i class="fas fa-user-shield"></i> <span class="menu-text">管理ユーザー一覧</span>
+								<%
+								if (pendingAdminList != null && !pendingAdminList.isEmpty()) {
+								%>
+									<div class="pending-badge"><%=request.getAttribute("pendingCount") %></div>
+								<%
+								}%>
 						</a></li>
 					</ul>
 				</nav>
@@ -117,7 +125,10 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 								</div>
 
 								<div class="search-button-wrap">
-									<button type="submit" class="search-button">検索</button>
+									<button type="submit" class="btn btn-blue">検索</button>
+								
+									<a href="<%=request.getContextPath()%>/admin/users?viewType=registered"
+										class="btn btn-outline-blue">リセット</a>
 								</div>
 							</div>
 						</form>
@@ -141,7 +152,7 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 								<div class="user-mail"><%=user.getEmail()%></div>
 								<div class="user-row-actions">
 									<button type="button"
-										class="delete-button open-delete-modal-button"
+										class="btn btn-red open-delete-modal-button"
 										data-user-id="<%=user.getId()%>"
 										data-user-name="<%=user.getUserName()%>">削除</button>
 								</div>
@@ -202,14 +213,15 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 									<form action="<%=request.getContextPath()%>/admin/approve"
 										method="post" class="inline-form">
 										<input type="hidden" name="userId" value="<%=user.getId()%>">
-										<button type="submit" class="approval-button">許可</button>
+										<button type="submit" class="btn btn-green">許可</button>
 									</form>
 
-									<form action="<%=request.getContextPath()%>/admin/reject"
-										method="post" class="inline-form">
-										<input type="hidden" name="userId" value="<%=user.getId()%>">
-										<button type="submit" class="reject-button">却下</button>
-									</form>
+									<button type="button"
+										class="btn btn-outline-green open-reject-modal-button"
+										data-user-id="<%=user.getId()%>"
+										data-user-name="<%=user.getUserName()%>">
+										却下
+									</button>
 								</div>
 							</div>
 							<%
@@ -252,11 +264,38 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 								<div>
 									<span class="status-badge status-admin">管理者</span>
 								</div>
+								<%
+								Integer adminCount = (Integer) request.getAttribute("adminCount");
+								if (adminCount == null) {
+									adminCount = 0;
+								}
+								%>
 								<div class="user-row-actions">
-									<button type="button"
-										class="delete-button open-delete-modal-button"
-										data-user-id="<%=user.getId()%>"
-										data-user-name="<%=user.getUserName()%>">削除</button>
+									<%
+									boolean isSelf = (loginUser != null && loginUser.getId() == user.getId());
+									boolean isLastAdmin = (adminCount <= 1 && user.getRole() == 1);
+								
+									if (isSelf) {
+									%>
+										<button type="button" class="btn btn-outline-gray" disabled>
+											あなた
+										</button>
+									<%
+									} else if (isLastAdmin) {
+									%>
+										<button type="button" class="btn btn-outline-red" disabled>
+											最後の管理者
+										</button>
+									<%
+									} else {
+									%>
+										<button type="button"
+											class="btn btn-red open-delete-modal-button"
+											data-user-id="<%=user.getId()%>"
+											data-user-name="<%=user.getUserName()%>">削除</button>
+									<%
+									}
+									%>
 								</div>
 							</div>
 							<%
@@ -291,9 +330,32 @@ List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserLis
 					<input type="hidden" name="userId" id="deleteTargetUserId">
 
 					<div class="confirm-actions">
-						<button type="button" class="secondary-button"
+						<button type="button" class="btn btn-outline-red"
 							id="cancelDeleteButton">キャンセル</button>
-						<button type="submit" class="delete-button">削除する</button>
+						<button type="submit" class="btn btn-red">削除する</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<!-- ========================================
+		     却下確認モーダル
+		======================================== -->
+		<div class="confirm-modal-overlay" id="rejectConfirmModal">
+			<div class="confirm-modal">
+				<p class="confirm-message">
+					<span id="rejectTargetUserName"></span> さんの<BR>管理者申請を却下しますか？
+				</p>
+		
+				<form id="rejectUserForm"
+					action="<%=request.getContextPath()%>/admin/reject"
+					method="post">
+					<input type="hidden" name="userId" id="rejectTargetUserId">
+		
+					<div class="confirm-actions">
+						<button type="button" class="btn btn-outline-green"
+							id="cancelRejectButton">キャンセル</button>
+						<button type="submit" class="btn btn-green">却下する</button>
 					</div>
 				</form>
 			</div>

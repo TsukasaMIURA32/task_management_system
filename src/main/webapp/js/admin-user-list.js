@@ -64,3 +64,46 @@ document.addEventListener("keydown", function (e) {
     closeDeleteModal();
   }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+	/* =========================
+	   却下確認モーダル
+	========================= */
+	var rejectModal = document.getElementById("rejectConfirmModal");
+	var rejectTargetUserId = document.getElementById("rejectTargetUserId");
+	var rejectTargetUserName = document.getElementById("rejectTargetUserName");
+	var cancelRejectButton = document.getElementById("cancelRejectButton");
+
+	var openRejectButtons = document.querySelectorAll(".open-reject-modal-button");
+
+	// モーダルを開く
+	for (var i = 0; i < openRejectButtons.length; i++) {
+		openRejectButtons[i].addEventListener("click", function () {
+
+			var userId = this.getAttribute("data-user-id");
+			var userName = this.getAttribute("data-user-name");
+
+			rejectTargetUserId.value = userId;
+			rejectTargetUserName.textContent = userName;
+
+			rejectModal.classList.add("show");
+		});
+	}
+
+	// キャンセルボタン
+	if (cancelRejectButton) {
+		cancelRejectButton.addEventListener("click", function () {
+			rejectModal.classList.remove("show");
+		});
+	}
+
+	// 背景クリックで閉じる
+	if (rejectModal) {
+		rejectModal.addEventListener("click", function (e) {
+			if (e.target === rejectModal) {
+				rejectModal.classList.remove("is-active");
+			}
+		});
+	}
+});
