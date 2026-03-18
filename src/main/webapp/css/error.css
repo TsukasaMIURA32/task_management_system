@@ -1,0 +1,36 @@
+@charset "UTF-8";
+
+body {
+	font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+	background-color: #f8f9fa;
+	margin: 0;
+}
+.error-container {
+	max-width: 640px;
+	margin: 120px auto;
+	padding: 32px;
+	background: #fff;
+	border-radius: 12px;
+	text-align: center;
+	border: 1px solid #ddd;
+}
+.error-title {
+	font-size: 24px;
+	margin-bottom: 16px;
+}
+
+.error-title > i{
+	font-size: 40px;
+	margin: 0 10px;
+	color: #EA4335;
+}
+.error-message {
+	margin-bottom: 24px;
+}
+.back-link {
+	padding: 10px 16px;
+	background: #4285F4;
+	color: #fff;
+	border-radius: 8px;
+	text-decoration: none;
+}

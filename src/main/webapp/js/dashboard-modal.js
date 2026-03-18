@@ -6,6 +6,7 @@ const editNoteForm = document.getElementById("editNoteForm");
 const editTargetId = document.getElementById("editTargetId");
 const editNoteTitle = document.getElementById("editNoteTitle");
 const editNoteContent = document.getElementById("editNoteContent");
+const updatedAt = document.getElementById("updateDate");
 const closeEditModal = document.getElementById("closeEditModal");
 
 /* ==========================================================
@@ -41,6 +42,12 @@ const noteCards = document.getElementsByClassName("note-card");
    既存画像はサーバー側のデータなので別管理
 */
 let selectedNewFiles = [];
+
+/* 編集開始時の元の値を保持する */
+let originalEditTitle = "";
+let originalEditContent = "";
+let originalEditColorId = "1";
+let originalExistingImageIds = [];
 
 /* 
    必須要素がそろっているときだけ初期化を進める
@@ -451,13 +458,22 @@ if (
       }
 
       const task = await response.json();
-      console.log("task detail =", task);
-      console.log("sharedUsers =", task.sharedUsers);
+//      console.log("task detail =", task);
+//      console.log("sharedUsers =", task.sharedUsers);
 
       /* タスク基本情報をフォームへ反映 */
       editTargetId.value = task.id || "";
       editNoteTitle.value = task.title || "";
       editNoteContent.value = task.content || "";
+	  updatedAt.value = task.updatedAt || "";
+	  
+	  /* 編集開始時の元データを保持 */
+	  originalEditTitle = task.title || "";
+	  originalEditContent = task.content || "";
+	  originalEditColorId = String(task.colorId || 1);
+	  originalExistingImageIds = (task.imageIdList || []).map(function (id) {
+	    return String(id);
+	  });
 
       if (editNoteColorId) {
         editNoteColorId.value = task.colorId || 1;
@@ -524,22 +540,60 @@ if (
   /* ==========================================================
      編集モーダルの基本イベント
   ========================================================== */
+  /* 変更があるかチェック */
+  function hasEditChange() {
+    /* 現在のタイトル・本文 */
+    const currentTitle = editNoteTitle.value;
+    const currentContent = editNoteContent.value;
 
-  /* 閉じるボタン押下時はフォーム送信 */
+    /* 現在の色ID */
+    const currentColorId = editNoteColorId ? String(editNoteColorId.value) : "1";
+
+    /* 削除対象に入っている既存画像ID */
+    let deletedImageIds = [];
+    if (editDeleteImageIds && editDeleteImageIds.value) {
+      deletedImageIds = editDeleteImageIds.value.split(",").filter(function (id) {
+        return id !== "";
+      });
+    }
+
+    /* 既存画像の削除があるか */
+    const hasDeletedExistingImage = deletedImageIds.length > 0;
+
+    /* 新規画像の追加があるか */
+    const hasNewImage = selectedNewFiles.length > 0;
+
+    return (
+      currentTitle !== originalEditTitle ||
+      currentContent !== originalEditContent ||
+      currentColorId !== originalEditColorId ||
+      hasDeletedExistingImage ||
+      hasNewImage
+    );
+  }
+  /* 閉じるボタン */
   if (closeEditModal) {
     closeEditModal.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      editNoteForm.submit();
+      submitOrCloseEditModal();
     });
   }
 
-  /* オーバーレイ背景クリックでモーダルを閉じる */
+  /* 背景クリック */
   editModalOverlay.addEventListener("click", function (e) {
     if (e.target === editModalOverlay) {
-      closeEditModalFn();
+      submitOrCloseEditModal();
     }
   });
+  
+  function submitOrCloseEditModal() {
+    if (hasEditChange()) {
+      editNoteForm.submit();
+    } else {
+      closeEditModalFn();
+    }
+  }
 
   /* 削除 / 共有解除ボタン処理 */
   if (editDeleteButton) {

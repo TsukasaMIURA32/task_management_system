@@ -11,6 +11,7 @@
 <title>タスク管理システム</title>
 <link href="<%=request.getContextPath()%>/css/user-menu.css" rel="stylesheet" type="text/css" />
 <link href="<%=request.getContextPath()%>/css/dashboard.css" rel="stylesheet" type="text/css" />
+<link href="<%=request.getContextPath()%>/css/flash-message.css" rel="stylesheet" type="text/css" />
 <link href="<%=request.getContextPath()%>/css/dashboard-modal.css" rel="stylesheet" type="text/css" />
 
 <link rel="stylesheet"
@@ -74,6 +75,17 @@
 
 			<!-- 入力エリア -->
 			<div class="content-area" id="contentArea">
+				<%
+				String flashMessage = (String) session.getAttribute("flashMessage");
+				if (flashMessage != null) {
+					session.removeAttribute("flashMessage");
+				}
+				 if (flashMessage != null) { %>
+					<div class="toast-message" id="toastMessage">
+						<i class="fas fa-info-circle"></i>
+						<span><%= flashMessage %></span>
+					</div>
+				<% } %>
 				<section class="note-input-area">
 					<form class="note-form collapsed" id="noteForm"
 						action="<%=request.getContextPath()%>/task/create" method="post"
@@ -330,6 +342,7 @@
 <script src="<%=request.getContextPath()%>/js/dashboard-member.js"></script>
 <script src="<%=request.getContextPath()%>/js/dashboard.js"></script>
 <script src="<%=request.getContextPath()%>/js/user-menu.js"></script>
+<script src="<%=request.getContextPath()%>/js/flash-message.js"></script>
 <script src="<%=request.getContextPath()%>/js/dashboard-modal.js"></script>
 </body>
 </html>

@@ -168,7 +168,6 @@ noteForm.addEventListener("click", function (e) {
 imageUploadButton.addEventListener("click", function (e) {
   e.stopPropagation();
   openNoteForm();
-  noteImage.click();
 });
 
 /* =========================
@@ -195,13 +194,7 @@ function hasNoteInput() {
 closeNoteForm.addEventListener("click", function (e) {
   e.preventDefault();
   e.stopPropagation();
-
-  if (hasNoteInput()) {
-    syncNoteImageInput();
-    noteForm.submit();
-  } else {
-    forceCloseNoteForm();
-  }
+  submitOrCloseNoteForm();
 });
 
 /* 
@@ -210,9 +203,20 @@ closeNoteForm.addEventListener("click", function (e) {
   - 開いているpopoverを閉じる
 */
 document.addEventListener("click", function () {
-  closeNoteFormIfEmpty();
+  if (noteForm.classList.contains("expanded") || hasNoteInput()) {
+    submitOrCloseNoteForm();
+  }
   closeAllPopovers();
 });
+
+function submitOrCloseNoteForm() {
+  if (hasNoteInput()) {
+    syncNoteImageInput();
+    noteForm.submit();
+  } else {
+    forceCloseNoteForm();
+  }
+}
 
 /* =========================
    popover共通処理

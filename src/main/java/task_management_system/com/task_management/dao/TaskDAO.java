@@ -261,24 +261,6 @@ public class TaskDAO extends BaseDAO<TaskDTO> {
 		return taskList;
 	}
 
-	public int clearOwner(int taskId) {
-		String sql = "UPDATE tasks SET owner_id = NULL, updated_at = NOW() WHERE id = ?";
-		int result = 0;
-
-		try (Connection conn = DBCon.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-			pstmt.setInt(1, taskId);
-			result = pstmt.executeUpdate();
-
-		} catch (SQLException e) {
-			System.out.println("owner解除SQLエラー");
-			e.printStackTrace();
-		}
-
-		return result;
-	}
-
 	// 指定ユーザーを除いた共有ユーザー一覧を取得
 	private List<UserDTO> getSharedUsersByTaskId(Connection conn, int taskId, int excludeUserId) throws SQLException {
 		List<UserDTO> sharedUserList = new ArrayList<>();
