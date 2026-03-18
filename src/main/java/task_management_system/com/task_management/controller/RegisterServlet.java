@@ -1,7 +1,7 @@
 package task_management_system.com.task_management.controller;
 
-
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,18 +14,21 @@ import task_management_system.com.task_management.dto.UserDTO;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
-
     private static final long serialVersionUID = 1L;
 
-    // 画面表示
+    // 8文字以上、数字を1文字以上、記号を1文字以上含む
+    private static final Pattern PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$");
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.getRequestDispatcher("/register.jsp").forward(request, response);
+        request.getRequestDispatcher("/register.jsp")
+               .forward(request, response);
     }
+    
 
-    // 登録処理
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,35 +38,51 @@ public class RegisterServlet extends HttpServlet {
         String userName = request.getParameter("userName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        String role = request.getParameter("role");
+        String confirmPassword = request.getParameter("confirmPassword");
+        String roleStr = request.getParameter("role");
 
-        // role変換
-        int roleValue = 0;
+        if (userName == null || userName.isBlank()
+                || email == null || email.isBlank()
+                || password == null || password.isBlank()
+                || confirmPassword == null || confirmPassword.isBlank()) {
 
-        if ("admin".equals(role)) {
-            roleValue = 2; // 承認待ち
-        } else {
-            roleValue = 0; // 一般ユーザー
+            request.setAttribute("error", "未入力の項目があります。");
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            return;
         }
 
-        UserDAO userDAO = new UserDAO();
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            request.setAttribute("error", "パスワードは8文字以上で、数字と記号を1文字以上含めてください。");
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            return;
+        }
 
-        // メール重複チェック
-        if (userDAO.existsByEmail(email)) {
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("error", "パスワードと確認用パスワードが一致しません。");
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            return;
+        }
+
+        int role = 0;
+        if ("admin".equals(roleStr)) {
+            role = 2; // 管理ユーザーは承認待ち
+        }
+
+        UserDAO userDao = new UserDAO();
+
+        if (userDao.existsByEmail(email)) {
             request.setAttribute("error", "このメールアドレスは既に登録されています。");
             request.getRequestDispatcher("/register.jsp").forward(request, response);
             return;
         }
 
-        // DTO作成
         UserDTO user = new UserDTO();
         user.setUserName(userName);
         user.setEmail(email);
         user.setPassword(password);
-        user.setRole(roleValue);
+        user.setRole(role);
 
-        // DB登録
-        boolean result = userDAO.insertUser(user);
+        boolean result = userDao.insertUser(user);
 
         if (result) {
             response.sendRedirect(request.getContextPath() + "/registerComplete.jsp");

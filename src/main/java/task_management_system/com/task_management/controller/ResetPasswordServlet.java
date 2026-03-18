@@ -1,6 +1,5 @@
 package task_management_system.com.task_management.controller;
 
-
 import java.io.IOException;
 
 import jakarta.servlet.ServletException;
@@ -10,10 +9,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import task_management_system.com.task_management.dao.UserDAO;
+import task_management_system.com.task_management.dto.UserDTO;
 
 @WebServlet("/resetPassword")
 public class ResetPasswordServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
+    // 8文字以上、数字を含む、記号を含む
+    private static final String PASSWORD_REGEX =
+            "^(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -21,8 +25,7 @@ public class ResetPasswordServlet extends HttpServlet {
 
         request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
     }
-   
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -33,49 +36,53 @@ public class ResetPasswordServlet extends HttpServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        // 前後の空白を除去
-        if (email != null) {
-            email = email.trim();
-        }
-        if (newPassword != null) {
-            newPassword = newPassword.trim();
-        }
-        if (confirmPassword != null) {
-            confirmPassword = confirmPassword.trim();
-        }
+        request.setAttribute("email", email);
 
         // 未入力チェック
-        if (email == null || email.isEmpty()
-                || newPassword == null || newPassword.isEmpty()
-                || confirmPassword == null || confirmPassword.isEmpty()) {
-
+        if (isBlank(email) || isBlank(newPassword) || isBlank(confirmPassword)) {
             request.setAttribute("error", "未入力の項目があります。");
-            request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
-            return;
-        }
-
-        // パスワード文字数チェック 
-        if (newPassword.length() < 8) {
-            request.setAttribute("error", "パスワードは8文字以上で入力してください。");
             request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
             return;
         }
 
         // パスワード一致チェック
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "確認用パスワードが一致しません。");
+            request.setAttribute("error", "新しいパスワードと確認用パスワードが一致しません。");
             request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
             return;
         }
 
-        UserDAO dao = new UserDAO();
-        boolean result = dao.updatePasswordByEmail(email, newPassword);
+        // パスワード形式チェック
+        if (!newPassword.matches(PASSWORD_REGEX)) {
+            request.setAttribute("error", "パスワードは8文字以上で、数字と記号を含めてください。");
+            request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
+            return;
+        }
+
+        UserDAO userDAO = new UserDAO();
+
+        // メールアドレス存在チェック
+        if (!userDAO.existsByEmail(email)) {
+            request.setAttribute("error", "このメールアドレスは登録されていません。");
+            request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
+            return;
+        }
+
+        UserDTO user = new UserDTO();
+        user.setEmail(email);
+        user.setPassword(newPassword);
+
+        boolean result = userDAO.updatePasswordByEmail(email, newPassword);
 
         if (result) {
             response.sendRedirect(request.getContextPath() + "/resetComplete.jsp");
         } else {
-            request.setAttribute("error", "メールアドレスが存在しないか、更新に失敗しました。");
+            request.setAttribute("error", "パスワードの更新に失敗しました。");
             request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
         }
+    }
+
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
     }
 }
