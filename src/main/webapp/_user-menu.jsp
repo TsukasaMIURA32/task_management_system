@@ -90,7 +90,11 @@
 						class="withdraw-confirm-btn">退会</button>
 				</div>
 			</div>
-			<form id="withdrawForm" action="<%=request.getContextPath()%>/user/delete" method="post"></form>
+			<form id="withdrawForm" action="<%=request.getContextPath()%>/user/withdraw" method="post">
+				<% if (request.getParameter("viewType") != null) { %>
+					<input type="hidden" name="viewType" value="<%= request.getParameter("viewType") %>">
+				<% } %>
+			</form>
 
 		</div>
 	</div>
