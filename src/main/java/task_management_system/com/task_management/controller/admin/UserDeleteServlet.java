@@ -1,6 +1,7 @@
 package task_management_system.com.task_management.controller.admin;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,20 +10,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import task_management_system.com.task_management.dao.TaskDAO;
 import task_management_system.com.task_management.dao.UserDAO;
+import task_management_system.com.task_management.dto.TaskDTO;
 import task_management_system.com.task_management.dto.UserDTO;
 
 /**
  * Servlet implementation class DeleteAdminUserServlet
  */
-@WebServlet(name="/AdminDeleteUserServlet", urlPatterns="/admin/delete-user")
-public class DeleteAdminUserServlet extends HttpServlet {
+@WebServlet(name="/UserDeleteServlet", urlPatterns="/user/delete")
+public class UserDeleteServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public DeleteAdminUserServlet() {
+    public UserDeleteServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -107,6 +110,17 @@ public class DeleteAdminUserServlet extends HttpServlet {
 				response.sendRedirect(request.getContextPath() + "/admin/users?viewType=admin");
 				return;
 			}
+		}
+		
+		/* =========================
+		   削除対象ユーザーがownerのタスクを先に削除
+		========================= */
+		TaskDAO taskDAO = new TaskDAO();
+		List<TaskDTO> ownerTaskList = taskDAO.getTasksByOwnerId(userId);
+
+		for (TaskDTO task : ownerTaskList) {
+			// owner_id は NOT NULL のため、ownerタスクは他メンバーがいても削除する
+			taskDAO.delete(task.getId());
 		}
 
 		/* =========================

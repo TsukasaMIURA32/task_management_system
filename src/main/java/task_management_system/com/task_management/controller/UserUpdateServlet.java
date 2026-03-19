@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
 
-@WebServlet("/user/update")
+@WebServlet(name="UserUpdateServlet", urlPatterns="/user/update")
 public class UserUpdateServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 

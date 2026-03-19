@@ -30,6 +30,7 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
 <link href="<%=request.getContextPath()%>/css/user-menu.css" rel="stylesheet" type="text/css" />
 <link href="<%=request.getContextPath()%>/css/dashboard.css" rel="stylesheet" type="text/css" />
+<link href="<%=request.getContextPath()%>/css/flash-message.css" rel="stylesheet" type="text/css" />
 <link href="<%=request.getContextPath()%>/css/admin-user-list.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -100,6 +101,17 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
 			<!-- コンテンツ -->
 			<div class="content-area" id="contentArea">
+				<%
+				String flashMessage = (String) session.getAttribute("flashMessage");
+				if (flashMessage != null) {
+					session.removeAttribute("flashMessage");
+				}
+				 if (flashMessage != null) { %>
+					<div class="toast-message" id="toastMessage">
+						<i class="fas fa-info-circle"></i>
+						<span><%= flashMessage %></span>
+					</div>
+				<% } %>
 
 				<%
 				if ("registered".equals(viewType)) {
@@ -325,7 +337,7 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 				<p class="confirm-message">本当に削除しますか？</p>
 
 				<form id="deleteUserForm"
-					action="<%=request.getContextPath()%>/admin/delete-user"
+					action="<%=request.getContextPath()%>/user/delete"
 					method="post">
 					<input type="hidden" name="userId" id="deleteTargetUserId">
 
@@ -367,5 +379,6 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 	</script>
 	<script src="<%=request.getContextPath()%>/js/user-menu.js"></script>
 	<script src="<%=request.getContextPath()%>/js/admin-user-list.js"></script>
+	<script src="<%=request.getContextPath()%>/js/flash-message.js"></script>
 </body>
 </html>
