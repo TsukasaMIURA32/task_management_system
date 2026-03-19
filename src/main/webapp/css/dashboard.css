@@ -389,6 +389,12 @@ body {
   background-color: #e8eaed;
 }
 
+.mini-form > .add-member-button{
+	color: #ffffff !important;
+	border: solid 2px #4285F4 !important;
+	background-color: #4285F4!important;
+}
+
 .form-actions button:hover {
   opacity: 0.9;
 }

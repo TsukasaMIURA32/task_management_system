@@ -4,6 +4,7 @@ const contentArea = document.getElementById("contentArea");
 
 const deleteConfirmModal = document.getElementById("deleteConfirmModal");
 const deleteTargetUserId = document.getElementById("deleteTargetUserId");
+const deleteTargetUserName = document.getElementById("deleteTargetUserName");
 const cancelDeleteButton = document.getElementById("cancelDeleteButton");
 
 const openDeleteModalButtons = document.querySelectorAll(".open-delete-modal-button");
@@ -16,29 +17,12 @@ if (menuToggle && sidebar && contentArea) {
   });
 }
 
-/* 削除確認モーダルを開く */
-function openDeleteModal(userId) {
-  if (deleteTargetUserId) {
-    deleteTargetUserId.value = userId;
-  }
-
-  if (deleteConfirmModal) {
-    deleteConfirmModal.classList.add("show");
-  }
-}
-
-/* 削除確認モーダルを閉じる */
-function closeDeleteModal() {
-  if (deleteConfirmModal) {
-    deleteConfirmModal.classList.remove("show");
-  }
-}
-
 /* 一覧の削除ボタン */
 openDeleteModalButtons.forEach(function (button) {
   button.addEventListener("click", function () {
     const userId = this.dataset.userId;
-    openDeleteModal(userId);
+	const userName = this.dataset.userName;
+    openDeleteModal(userId, userName);
   });
 });
 
@@ -56,6 +40,25 @@ if (deleteConfirmModal) {
       closeDeleteModal();
     }
   });
+}
+
+/* 削除確認モーダルを開く */
+function openDeleteModal(userId, userName) {
+  if (deleteTargetUserId && deleteTargetUserName) {
+    deleteTargetUserId.value = userId;
+	deleteTargetUserName.textContent = userName;  
+}
+
+  if (deleteConfirmModal) {
+    deleteConfirmModal.classList.add("show");
+  }
+}
+
+/* 削除確認モーダルを閉じる */
+function closeDeleteModal() {
+  if (deleteConfirmModal) {
+    deleteConfirmModal.classList.remove("show");
+  }
 }
 
 /* Escape */
