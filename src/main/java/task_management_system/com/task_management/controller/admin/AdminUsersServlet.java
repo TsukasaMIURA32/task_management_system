@@ -95,6 +95,15 @@ public class AdminUsersServlet extends HttpServlet {
 	        
 	        int adminCount = userDAO.countAdminUsers();
 	        request.setAttribute("adminCount", adminCount);
+	        
+        /* =========================
+           申請却下済みユーザー一覧
+        ========================= */
+	     // 却下済みユーザー一覧画面のときだけ却下済みユーザー一覧を取得
+	        if ("rejected".equals(viewType)) {
+		        List<UserDTO> rejectedAdminList = userDAO.findUsersByRole(3);
+		        request.setAttribute("rejectedAdminList", rejectedAdminList);
+	        }
 
         /* =========================
            JSPへフォワード

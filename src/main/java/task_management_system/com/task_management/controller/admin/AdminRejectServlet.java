@@ -82,10 +82,10 @@ public class AdminRejectServlet extends HttpServlet {
 
 		/* =========================
 		   role更新
-		   申請中(2) → 一般ユーザー(0)
+		   申請中(2) → 却下済みユーザー(3)
 		========================= */
 		UserDAO userDAO = new UserDAO();
-		userDAO.updateRole(userId, 0);
+		userDAO.updateRole(userId, 3);
 
 		/* =========================
 		   一覧へ戻す

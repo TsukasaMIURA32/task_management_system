@@ -17,6 +17,7 @@ if (keyword == null) {
 List<UserDTO> registeredUserList = (List<UserDTO>) request.getAttribute("registeredUserList");
 List<UserDTO> pendingAdminList = (List<UserDTO>) request.getAttribute("pendingAdminList");
 List<UserDTO> adminUserList = (List<UserDTO>) request.getAttribute("adminUserList");
+List<UserDTO> rejectedAdminList = (List<UserDTO>) request.getAttribute("rejectedAdminList");
 
 UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 %>
@@ -79,22 +80,28 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 			<aside class="sidebar open" id="sidebar">
 				<nav class="menu">
 					<ul>
-						<li class="<%="registered".equals(viewType) ? "active" : ""%>">
-							<a
-							href="<%=request.getContextPath()%>/admin/users?viewType=registered">
+						<li class="<%="registered".equals(viewType) ? "active" : ""%> general">
+							<a href="<%=request.getContextPath()%>/admin/users?viewType=registered">
 								<i class="fas fa-user-friends"></i> <span class="menu-text">登録ユーザー一覧</span>
-						</a>
+							</a>
 						</li>
-						<li class="<%="admin".equals(viewType) ? "active" : ""%>"><a
-							href="<%=request.getContextPath()%>/admin/users?viewType=admin">
-								<i class="fas fa-user-shield"></i> <span class="menu-text">管理ユーザー一覧</span>
-								<%
-								if (pendingAdminList != null && !pendingAdminList.isEmpty()) {
-								%>
-									<div class="pending-badge"><%=request.getAttribute("pendingCount") %></div>
-								<%
-								}%>
-						</a></li>
+						<li class="<%="admin".equals(viewType) ? "active" : ""%> admin">
+							<a href="<%=request.getContextPath()%>/admin/users?viewType=admin">
+									<i class="fas fa-user-shield"></i> <span class="menu-text">管理ユーザー一覧</span>
+									<%
+									if (pendingAdminList != null && !pendingAdminList.isEmpty()) {
+									%>
+										<div class="pending-badge"><%=request.getAttribute("pendingCount") %></div>
+									<%
+									}%>
+							</a>
+						</li>
+						<li class="<%="rejected".equals(viewType) ? "active" : ""%> admin">
+							<a href="<%=request.getContextPath()%>/admin/users?viewType=rejected">
+								<i class="fas fa-user-slash"></i>
+								<span class="menu-text">却下済みユーザー一覧</span>
+							</a>
+						</li>
 					</ul>
 				</nav>
 			</aside>
@@ -326,6 +333,70 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 				<%
 				}
 				%>
+				
+				<%
+				if ("rejected".equals(viewType)) {
+				%>
+				<!-- ========================================
+				     申請却下済みユーザー一覧
+				======================================== -->
+				<section class="admin-page">
+
+					<!-- 申請却下済みユーザー -->
+					<div class="admin-section-card">
+						<div class="section-header">
+							<h2 class="section-title">申請却下済み管理ユーザー</h2>
+						</div>
+
+						<div class="user-list-wrap">
+							<div class="user-list-header pending-header">
+								<div>ID</div>
+								<div>名前</div>
+								<div>メールアドレス</div>
+								<div>状態</div>
+								<div>操作</div>
+							</div>
+							<%
+							if (rejectedAdminList != null && !rejectedAdminList.isEmpty()) {
+							%>
+							<%
+							for (UserDTO user : rejectedAdminList) {
+							%>
+							<div class="user-row-card pending-row">
+								<div class="user-id"><%=user.getId()%></div>
+								<div class="user-name"><%=user.getUserName()%></div>
+								<div class="user-mail"><%=user.getEmail()%></div>
+								<div>
+									<span class="status-badge status-rejected">申請却下</span>
+								</div>
+								<div class="user-row-actions">
+									<button type="button"
+										class="btn btn-green open-reject-to-approve-modal-button"
+										data-user-id="<%=user.getId()%>"
+										data-user-name="<%=user.getUserName()%>">
+										許可
+									</button>
+
+									<button type="button" class="btn btn-red open-delete-modal-button" 
+									data-user-id="<%=user.getId()%>" data-user-name="<%=user.getUserName()%>">削除</button>
+								</div>
+							</div>
+							<%
+							}
+							%>
+							<%
+							} else {
+							%>
+							<p class="empty-message">申請却下済みの管理ユーザーはいません。</p>
+							<%
+							}
+							%>
+						</div>
+					</div>
+				</section>
+				<%
+				}
+				%>
 			</div>
 		</main>
 
@@ -334,7 +405,7 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 		======================================== -->
 		<div class="confirm-modal-overlay" id="deleteConfirmModal">
 			<div class="confirm-modal">
-				<p class="confirm-message">本当に削除しますか？</p>
+				<p class="confirm-message">このユーザーを削除しますか？</p>
 
 				<form id="deleteUserForm"
 					action="<%=request.getContextPath()%>/user/delete"
@@ -357,7 +428,7 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 			<div class="confirm-modal">
 				<p class="confirm-message">
 					<span id="rejectTargetUserName"></span> さんの<BR>管理者申請を却下しますか？
-				</p>
+				
 		
 				<form id="rejectUserForm"
 					action="<%=request.getContextPath()%>/admin/reject"
@@ -368,6 +439,26 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 						<button type="button" class="btn btn-outline-green"
 							id="cancelRejectButton">キャンセル</button>
 						<button type="submit" class="btn btn-green">却下する</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<!-- ========================================
+		     却下→許可確認モーダル
+		======================================== -->
+		<div class="confirm-modal-overlay" id="rejectToApproveConfirmModal">
+			<div class="confirm-modal">
+				<p class="confirm-message">
+					<span id="rejectToApproveTargetUserName"></span> さんは<BR>申請却下済みのユーザーです。
+					<BR>管理ユーザー申請を許可しますか？
+				
+				<form action="<%=request.getContextPath()%>/admin/approve" method="post" class="inline-form">
+					<div class="confirm-actions">
+						<input type="hidden" name="userId" id="rejecttoApproveTargetUserId">
+						<button type="button" class="btn btn-outline-green"
+								id="cancelRejectToApproveButton">キャンセル</button>
+						<button type="submit" class="btn btn-green">許可</button>
 					</div>
 				</form>
 			</div>
