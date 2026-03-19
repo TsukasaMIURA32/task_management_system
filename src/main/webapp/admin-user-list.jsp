@@ -405,7 +405,7 @@ UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 		======================================== -->
 		<div class="confirm-modal-overlay" id="deleteConfirmModal">
 			<div class="confirm-modal">
-				<p class="confirm-message">このユーザーを削除しますか？</p>
+				<p class="confirm-message"><span id="deleteTargetUserName"></span> さんを削除しますか？</p>
 
 				<form id="deleteUserForm"
 					action="<%=request.getContextPath()%>/user/delete"

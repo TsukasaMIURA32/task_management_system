@@ -59,6 +59,7 @@ public class TaskDetailServlet extends HttpServlet {
 		out.print("\"content\":\"" + escapeJson(task.getContent()) + "\",");
 		out.print("\"colorId\":" + task.getColorId() + ",");
 		out.print("\"isOwner\":" + isOwner + ",");
+		out.print("\"updatedAt\":\"" + escapeJson(task.getUpdatedAt()) + "\",");
 
 		// 画像一覧
 		out.print("\"imageIdList\":[");

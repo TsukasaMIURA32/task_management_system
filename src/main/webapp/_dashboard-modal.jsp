@@ -63,7 +63,11 @@ if (editTask != null && editTask.getImageIdList() != null) {
 					<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
 				</div>
 				<div class="shared-users-text" id="editSharedUsersText"></div>
-				<div class="update-date" id="updateDate"><%=editTask != null && editTask.getUpdatedAt() != null ? editTask.getUpdatedAt() : ""%></div>
+				<div class="update-date">最終更新日時:
+					<div id="updateDate">
+						<%=editTask != null && editTask.getUpdatedAt() != null ? editTask.getUpdatedAt() : ""%>
+					</div>
+				</div>
 			</div>
 			<div class="form-actions">
 				<div class="note-tools">
@@ -118,21 +122,6 @@ if (editTask != null && editTask.getImageIdList() != null) {
 								data-edit-color="color-pink"></button>
 						</div>
 					</div>
-					<!-- メンバー追加 -->
-<!--					<div class="popover-panel" id="editMemberPopover">-->
-<!--						<div class="member-selector" data-mode="edit">-->
-<!--							<div class="mini-form">-->
-<!--								<input type="text" class="member-keyword-input"-->
-<!--									placeholder="名前またはメールアドレスを入力">-->
-<!--								<button type="button" class="add-member-button">追加</button>-->
-<!--							</div>-->
-					
-<!--							<div class="member-search-result"></div>-->
-<!--							<div class="member-preview"></div>-->
-<!--							<div class="shared-user-ids-container"></div>-->
-<!--						</div>-->
-<!--					</div>-->
-
 					<div class="popover-panel" id="editMorePopover">
 						<button type="button" id="editDeleteButton"
 							class="popover-action danger">削除</button>

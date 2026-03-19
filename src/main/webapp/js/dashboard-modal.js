@@ -458,14 +458,16 @@ if (
       }
 
       const task = await response.json();
-//      console.log("task detail =", task);
-//      console.log("sharedUsers =", task.sharedUsers);
+//	  console.log("task =", task);
+//	  console.log("task.updatedAt =", task.updatedAt);
 
       /* タスク基本情報をフォームへ反映 */
       editTargetId.value = task.id || "";
       editNoteTitle.value = task.title || "";
       editNoteContent.value = task.content || "";
-	  updatedAt.value = task.updatedAt || "";
+	  if (updatedAt) {
+	    updatedAt.textContent = task.updatedAt || "";
+	  }
 	  
 	  /* 編集開始時の元データを保持 */
 	  originalEditTitle = task.title || "";
@@ -498,6 +500,7 @@ if (
       /* 画像・共有ユーザー反映 */
       renderUnifiedPreview(task.imageIdList || []);
       renderEditSharedUsers(task.sharedUsers || []);
+	  
 
       /* 共同編集者モーダル側の初期値も合わせる */
       if (window.editMemberSelectorApi) {
