@@ -68,6 +68,14 @@ body {
   background-color: rgb(192, 215, 252);
 }
 
+.menu li.general{
+	border-left: solid 5px #4285F4;
+}
+
+.menu li.admin{
+	border-left: solid 5px #34A853;
+}
+
 .pending-badge{
 	color: #ffffff;
 	background-color: #4285F4;
@@ -287,6 +295,12 @@ body {
   border-color: #FBBC05;
 }
 
+.status-rejected {
+  background: #F1F3F4;
+  color: #70757A;
+  border-color: #70757A;
+}
+
 /* ===============================
    空メッセージ
 ================================= */
@@ -404,6 +418,7 @@ body {
   text-align: center;
   line-height: 1.6;
 }
+
 
 .confirm-actions {
   display: flex;
