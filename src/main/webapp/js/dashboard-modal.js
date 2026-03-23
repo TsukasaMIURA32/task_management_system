@@ -48,6 +48,7 @@ let originalEditTitle = "";
 let originalEditContent = "";
 let originalEditColorId = "1";
 let originalExistingImageIds = [];
+let originalSharedUserIds = [];
 
 /* 
    必須要素がそろっているときだけ初期化を進める
@@ -438,6 +439,40 @@ if (
 
     editSharedUsersText.innerHTML = '<i class="fas fa-users"></i>: ' + names;
   }
+  
+  /* 現在の共同編集者ID一覧を取得する */
+  function getCurrentEditSharedUserIds() {
+    const container = document.querySelector('.member-selector[data-mode="edit"] .shared-user-ids-container');
+
+    if (!container) {
+      return [];
+    }
+
+    const inputs = container.querySelectorAll('input[name="sharedUserIds"]');
+    const userIds = [];
+
+    for (let i = 0; i < inputs.length; i++) {
+      userIds.push(String(inputs[i].value));
+    }
+
+    userIds.sort();
+    return userIds;
+  }
+
+  /* 配列比較 */
+  function isSameArray(arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   /* ==========================================================
      タスク詳細取得 → 編集モーダル表示
@@ -447,24 +482,26 @@ if (
      カードを押したときにタスク詳細をサーバーから取得し、
      編集モーダルへ反映して表示する
   */
-  async function openEditModalByAjax(taskId) {
-    try {
-      const response = await fetch(
-        window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
-      );
+	 async function openEditModalByAjax(taskId) {
+	   try {
+	     const response = await fetch(
+	       window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
+	     );
 
-      if (!response.ok) {
-        throw new Error("タスク詳細の取得に失敗しました");
-      }
+	     if (!response.ok) {
+	       const errorData = await response.json();
+	       throw new Error(errorData.error || "タスク詳細の取得に失敗しました。");
+	     }
 
-      const task = await response.json();
-//	  console.log("task =", task);
+	     const task = await response.json();
+
+//	  csole.log("task =", task);
 //	  console.log("task.updatedAt =", task.updatedAt);
 
       /* タスク基本情報をフォームへ反映 */
-      editTargetId.value = task.id || "";
-      editNoteTitle.value = task.title || "";
-      editNoteContent.value = task.content || "";
+	  editTargetId.value = task.id || "";
+	  editNoteTitle.value = task.title || "";
+	  editNoteContent.value = task.content || "";
 	  if (updatedAt) {
 	    updatedAt.textContent = task.updatedAt || "";
 	  }
@@ -476,6 +513,9 @@ if (
 	  originalExistingImageIds = (task.imageIdList || []).map(function (id) {
 	    return String(id);
 	  });
+	  originalSharedUserIds = (task.sharedUsers || []).map(function (user) {
+	    return String(user.id);
+	  }).sort();
 
       if (editNoteColorId) {
         editNoteColorId.value = task.colorId || 1;
@@ -522,10 +562,10 @@ if (
       closeEditMemberModalFn();
       editModalOverlay.classList.add("show");
 
-    } catch (error) {
-      console.error("タスク詳細取得エラー:", error);
-      alert("タスク詳細の取得に失敗しました。");
-    }
+	  } catch (error) {
+	    console.error("タスク詳細取得エラー:", error);
+	    alert(error.message);
+	  }
   }
 
   /* 一覧カードクリック時に編集モーダルを開く */
@@ -566,12 +606,17 @@ if (
     /* 新規画像の追加があるか */
     const hasNewImage = selectedNewFiles.length > 0;
 
+    /* 共同編集者が変更されたか */
+    const currentSharedUserIds = getCurrentEditSharedUserIds();
+    const hasSharedUsersChanged = !isSameArray(originalSharedUserIds, currentSharedUserIds);
+
     return (
       currentTitle !== originalEditTitle ||
       currentContent !== originalEditContent ||
       currentColorId !== originalEditColorId ||
       hasDeletedExistingImage ||
-      hasNewImage
+      hasNewImage ||
+      hasSharedUsersChanged
     );
   }
   /* 閉じるボタン */
