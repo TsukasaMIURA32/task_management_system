@@ -17,6 +17,9 @@
   padding: 26px 20px;
   display: none;
   z-index: 2000;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .user-menu-popover.show {
@@ -93,7 +96,7 @@
 .manage-account-btn {
   border: 1px solid #8b9198;
   background: #eef2f7;
-  color: #0b57d0;
+  color: #4285F4;
   border-radius: 999px;
   padding: 12px 28px;
   font-size: 16px;
@@ -156,7 +159,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1185d8;
+  background: #4285F4;
   color: #fff;
   display: flex;
   align-items: center;
@@ -194,7 +197,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0b57d0;
+  color: #4285F4;
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -265,7 +268,7 @@
 }
 
 .save-btn {
-	background-color: #4285f4;
+	background-color: #4285F4;
 	color: #fff;
 }
 
@@ -382,12 +385,12 @@
 }
 
 .save-btn {
-  background-color: #0b57d0;
+  background-color: #4285F4;
   color: #fff;
 }
 
 .save-btn:hover {
-  background-color: #0847ad;
+  background-color: rgb(10, 66, 160);
 }
 
 .cancel-btn {
@@ -457,10 +460,59 @@
 }
 
 .withdraw-confirm-btn {
-	background: #d93025;
+	background: #EA4335;
 	color: #fff;
 }
 
 .withdraw-confirm-btn:hover {
-	background: #b3261e;
+	background: rgb(198, 34, 21);
+}
+
+/*パスワード変更*/
+.password-change-link-wrap {
+  margin-top: 8px;
+}
+
+.password-area{
+	margin: 3px 10px;
+}
+
+.password-area label{
+	font-size: 10px;
+}
+.password-change-link-wrap{
+	text-align: center;
+	margin: 0 auto;
+}
+
+.password-change-link-btn {
+  background: none;
+  border: 2px solid rgb(192, 192, 192);
+  border-radius: 25px;
+  color: #1a73e8;
+  cursor: pointer;
+  width: 60%;
+  font-size: 13px;
+}
+
+.password-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.password-change-form input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.password-change-message {
+  font-size: 13px;
+  color: #d93025;
+  min-height: 18px;
+  margin: 0 10px;
 }

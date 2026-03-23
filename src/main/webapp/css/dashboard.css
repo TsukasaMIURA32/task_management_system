@@ -88,9 +88,8 @@ body {
 .logo h1 i {
   margin-right: 10px;
   font-size: 30px;
-  color: #fbbc04;
+  color: #FBBC05
 }
-
 .user-info {
   padding: 0;
   border: none;
@@ -390,6 +389,12 @@ body {
   background-color: #e8eaed;
 }
 
+.mini-form > .add-member-button{
+	color: #ffffff !important;
+	border: solid 2px #4285F4 !important;
+	background-color: #4285F4!important;
+}
+
 .form-actions button:hover {
   opacity: 0.9;
 }
@@ -418,10 +423,9 @@ body {
 .popover-panel {
   position: absolute;
   z-index: 20;
-
   display: none;
-  min-width: 180px;
-  padding: 10px;
+/*  min-width: 180px;*/
+  padding: 5px;
   border: 1px solid #dadce0;
   border-radius: 12px;
   background: #fff;
@@ -505,6 +509,7 @@ body {
 
 .popover-action.danger {
   color: #c5221f;
+  padding:0 10px;
 }
 
 /* ===============================
@@ -754,7 +759,7 @@ body {
 /* ===============================
    レスポンシブ
 ================================= */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .sidebar {
     width: 72px;
   }

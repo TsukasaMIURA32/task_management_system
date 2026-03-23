@@ -90,6 +90,14 @@ public class LoginServlet extends HttpServlet {
             rd.forward(request, response);
             return;
         }
+        
+        // ===== 管理者申請中 =====
+        if (user.getRole() == 3) {
+            request.setAttribute("error", "管理ユーザー申請が却下されています。詳細は管理者にお問い合わせください。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
 
         // セッション保存前にパスワードは消す
         user.setPassword(null);

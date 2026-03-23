@@ -6,6 +6,7 @@ const editNoteForm = document.getElementById("editNoteForm");
 const editTargetId = document.getElementById("editTargetId");
 const editNoteTitle = document.getElementById("editNoteTitle");
 const editNoteContent = document.getElementById("editNoteContent");
+const updatedAt = document.getElementById("updateDate");
 const closeEditModal = document.getElementById("closeEditModal");
 
 /* ==========================================================
@@ -41,6 +42,13 @@ const noteCards = document.getElementsByClassName("note-card");
    既存画像はサーバー側のデータなので別管理
 */
 let selectedNewFiles = [];
+
+/* 編集開始時の元の値を保持する */
+let originalEditTitle = "";
+let originalEditContent = "";
+let originalEditColorId = "1";
+let originalExistingImageIds = [];
+let originalSharedUserIds = [];
 
 /* 
    必須要素がそろっているときだけ初期化を進める
@@ -431,6 +439,40 @@ if (
 
     editSharedUsersText.innerHTML = '<i class="fas fa-users"></i>: ' + names;
   }
+  
+  /* 現在の共同編集者ID一覧を取得する */
+  function getCurrentEditSharedUserIds() {
+    const container = document.querySelector('.member-selector[data-mode="edit"] .shared-user-ids-container');
+
+    if (!container) {
+      return [];
+    }
+
+    const inputs = container.querySelectorAll('input[name="sharedUserIds"]');
+    const userIds = [];
+
+    for (let i = 0; i < inputs.length; i++) {
+      userIds.push(String(inputs[i].value));
+    }
+
+    userIds.sort();
+    return userIds;
+  }
+
+  /* 配列比較 */
+  function isSameArray(arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   /* ==========================================================
      タスク詳細取得 → 編集モーダル表示
@@ -440,24 +482,40 @@ if (
      カードを押したときにタスク詳細をサーバーから取得し、
      編集モーダルへ反映して表示する
   */
-  async function openEditModalByAjax(taskId) {
-    try {
-      const response = await fetch(
-        window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
-      );
+	 async function openEditModalByAjax(taskId) {
+	   try {
+	     const response = await fetch(
+	       window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
+	     );
 
-      if (!response.ok) {
-        throw new Error("タスク詳細の取得に失敗しました");
-      }
+	     if (!response.ok) {
+	       const errorData = await response.json();
+	       throw new Error(errorData.error || "タスク詳細の取得に失敗しました。");
+	     }
 
-      const task = await response.json();
-      console.log("task detail =", task);
-      console.log("sharedUsers =", task.sharedUsers);
+	     const task = await response.json();
+
+//	  csole.log("task =", task);
+//	  console.log("task.updatedAt =", task.updatedAt);
 
       /* タスク基本情報をフォームへ反映 */
-      editTargetId.value = task.id || "";
-      editNoteTitle.value = task.title || "";
-      editNoteContent.value = task.content || "";
+	  editTargetId.value = task.id || "";
+	  editNoteTitle.value = task.title || "";
+	  editNoteContent.value = task.content || "";
+	  if (updatedAt) {
+	    updatedAt.textContent = task.updatedAt || "";
+	  }
+	  
+	  /* 編集開始時の元データを保持 */
+	  originalEditTitle = task.title || "";
+	  originalEditContent = task.content || "";
+	  originalEditColorId = String(task.colorId || 1);
+	  originalExistingImageIds = (task.imageIdList || []).map(function (id) {
+	    return String(id);
+	  });
+	  originalSharedUserIds = (task.sharedUsers || []).map(function (user) {
+	    return String(user.id);
+	  }).sort();
 
       if (editNoteColorId) {
         editNoteColorId.value = task.colorId || 1;
@@ -482,6 +540,7 @@ if (
       /* 画像・共有ユーザー反映 */
       renderUnifiedPreview(task.imageIdList || []);
       renderEditSharedUsers(task.sharedUsers || []);
+	  
 
       /* 共同編集者モーダル側の初期値も合わせる */
       if (window.editMemberSelectorApi) {
@@ -503,10 +562,10 @@ if (
       closeEditMemberModalFn();
       editModalOverlay.classList.add("show");
 
-    } catch (error) {
-      console.error("タスク詳細取得エラー:", error);
-      alert("タスク詳細の取得に失敗しました。");
-    }
+	  } catch (error) {
+	    console.error("タスク詳細取得エラー:", error);
+	    alert(error.message);
+	  }
   }
 
   /* 一覧カードクリック時に編集モーダルを開く */
@@ -524,22 +583,65 @@ if (
   /* ==========================================================
      編集モーダルの基本イベント
   ========================================================== */
+  /* 変更があるかチェック */
+  function hasEditChange() {
+    /* 現在のタイトル・本文 */
+    const currentTitle = editNoteTitle.value;
+    const currentContent = editNoteContent.value;
 
-  /* 閉じるボタン押下時はフォーム送信 */
+    /* 現在の色ID */
+    const currentColorId = editNoteColorId ? String(editNoteColorId.value) : "1";
+
+    /* 削除対象に入っている既存画像ID */
+    let deletedImageIds = [];
+    if (editDeleteImageIds && editDeleteImageIds.value) {
+      deletedImageIds = editDeleteImageIds.value.split(",").filter(function (id) {
+        return id !== "";
+      });
+    }
+
+    /* 既存画像の削除があるか */
+    const hasDeletedExistingImage = deletedImageIds.length > 0;
+
+    /* 新規画像の追加があるか */
+    const hasNewImage = selectedNewFiles.length > 0;
+
+    /* 共同編集者が変更されたか */
+    const currentSharedUserIds = getCurrentEditSharedUserIds();
+    const hasSharedUsersChanged = !isSameArray(originalSharedUserIds, currentSharedUserIds);
+
+    return (
+      currentTitle !== originalEditTitle ||
+      currentContent !== originalEditContent ||
+      currentColorId !== originalEditColorId ||
+      hasDeletedExistingImage ||
+      hasNewImage ||
+      hasSharedUsersChanged
+    );
+  }
+  /* 閉じるボタン */
   if (closeEditModal) {
     closeEditModal.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      editNoteForm.submit();
+      submitOrCloseEditModal();
     });
   }
 
-  /* オーバーレイ背景クリックでモーダルを閉じる */
+  /* 背景クリック */
   editModalOverlay.addEventListener("click", function (e) {
     if (e.target === editModalOverlay) {
-      closeEditModalFn();
+      submitOrCloseEditModal();
     }
   });
+  
+  function submitOrCloseEditModal() {
+    if (hasEditChange()) {
+      editNoteForm.submit();
+    } else {
+      closeEditModalFn();
+    }
+  }
 
   /* 削除 / 共有解除ボタン処理 */
   if (editDeleteButton) {

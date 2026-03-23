@@ -21,65 +21,137 @@ import task_management_system.com.task_management.dto.UserDTO;
 @WebServlet(name = "TaskCreateServlet", urlPatterns = "/task/create")
 @MultipartConfig
 public class TaskCreateServlet extends HttpServlet {
-    private TaskDAO taskDAO = new TaskDAO();
-    private TaskUserDAO taskUserDAO = new TaskUserDAO();
+	private TaskDAO taskDAO = new TaskDAO();
+	private TaskUserDAO taskUserDAO = new TaskUserDAO();
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	        throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
+	    // リクエストの文字コードをUTF-8に設定（日本語対策）
+	    request.setCharacterEncoding("UTF-8");
 
-        HttpSession session = request.getSession(false);
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+	    // 既存のセッションを取得（なければnull）
+	    HttpSession session = request.getSession(false);
 
-//        System.out.println("=== TaskCreateServlet ===");
-//        System.out.println("session loginUser = " + loginUser);
+	    // セッションがない＝未ログイン → ログイン画面へ
+	    if (session == null) {
+	        response.sendRedirect(request.getContextPath() + "/login");
+	        return;
+	    }
 
-//        if (loginUser != null) {
-//            System.out.println("loginUser id = " + loginUser.getId());
-//            System.out.println("loginUser name = " + loginUser.getUserName());
-//            System.out.println("loginUser email = " + loginUser.getEmail());
-//        }
-		
-		request.setAttribute("loginUser", loginUser);
+	    // セッションからログインユーザーを取得
+	    UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
-        String title = request.getParameter("title");
-        String content = request.getParameter("content");
-        String colorIdStr = request.getParameter("colorId");
-        String[] sharedUserIds = request.getParameterValues("sharedUserIds");
+	    // ログインユーザーが取得できない場合もログイン画面へ
+	    if (loginUser == null) {
+	        response.sendRedirect(request.getContextPath() + "/login");
+	        return;
+	    }
 
-        int colorId = 1;
-        if (colorIdStr != null && !colorIdStr.isBlank()) {
-            colorId = Integer.parseInt(colorIdStr);
-        }
+	    // フォームから送られてきた値を取得
+	    String title = request.getParameter("title");       // タイトル
+	    String content = request.getParameter("content");   // 本文
+	    String colorIdStr = request.getParameter("colorId"); // 色ID（文字列）
+	    String[] sharedUserIds = request.getParameterValues("sharedUserIds"); // 共有ユーザー
 
-        TaskDTO dto = new TaskDTO();
-        dto.setOwnerId(loginUser.getId());
-//        System.out.println("dto ownerId = " + dto.getOwnerId());
-        dto.setTitle(title);
-        dto.setContent(content);
-        dto.setOwnerId(loginUser.getId());
-        dto.setColorId(colorId);
+	    /* =========================
+	       バリデーション
+	    ========================= */
+//	    System.out.println(colorIdStr);
+	    // デフォルトの色ID（未指定時）
+	    int colorId = 1;
 
-        // 1. tasks 登録
-        int taskId = taskDAO.insert(dto);
+	    try {
+	        if (colorIdStr != null && !colorIdStr.isBlank()) {
+	            colorId = Integer.parseInt(colorIdStr);
+	        }
+	    } catch (NumberFormatException e) {
+	        // 数値変換できない場合はデフォルト値のまま
+	        colorId = 1;
+	    }
 
-        if (taskId > 0) {
-            // 2. tasks_users 登録
-            taskUserDAO.insertTaskUsers(taskId, sharedUserIds, loginUser.getId());
+	    // 範囲外もデフォルトに補正
+	    if (colorId < 1 || colorId > 5) {
+	        colorId = 1;
+	    }
+	    
 
-            // 3. 画像登録
-            Collection<Part> parts = request.getParts();
-            for (Part part : parts) {
-                if ("image".equals(part.getName()) && part.getSize() > 0) {
-                    try (InputStream is = part.getInputStream()) {
-                        taskDAO.insertTaskImage(taskId, is);
-                    }
-                }
-            }
-        }
 
-        response.sendRedirect(request.getContextPath() + "/dashboard");
-    }
+	    // multipartで送られてきた全パーツ取得（画像など）
+	    Collection<Part> parts = request.getParts();
+
+	    // 最大サイズ（64KB）
+	    long maxSize = 64 * 1024;
+
+	    // アップロードされた画像のサイズチェック
+	    for (Part part : parts) {
+	        // name="image" のファイルのみ対象
+	        if ("image".equals(part.getName()) && part.getSize() > 0) {
+
+	            // サイズオーバーなら処理中断
+	            if (part.getSize() > maxSize) {
+	                session.setAttribute("flashMessage", "画像サイズが大きすぎます。64KB以下にしてください。");
+	                response.sendRedirect(request.getContextPath() + "/dashboard");
+	                return;
+	            }
+	        }
+	    }
+
+	    try {
+	        // タスク情報をDTOに詰める
+	        TaskDTO dto = new TaskDTO();
+
+	        // 作成者（owner）としてログインユーザーIDをセット
+	        dto.setOwnerId(loginUser.getId());
+
+	        // タイトル・内容・色をセット
+	        dto.setTitle(title);
+	        dto.setContent(content);
+	        dto.setColorId(colorId);
+
+	        // ① tasksテーブルに登録
+	        int taskId = taskDAO.insert(dto);
+
+	        // 登録失敗チェック
+	        if (taskId <= 0) {
+	            session.setAttribute("flashMessage", "タスクの作成に失敗しました。");
+	            response.sendRedirect(request.getContextPath() + "/dashboard");
+	            return;
+	        }
+
+	        // ② tasks_users に共有ユーザー登録（＋自分も含める想定）
+	        taskUserDAO.insertTaskUsers(taskId, sharedUserIds, loginUser.getId());
+
+	        // ③ 画像登録処理
+	        for (Part part : parts) {
+	            if ("image".equals(part.getName()) && part.getSize() > 0) {
+
+	                // 入力ストリームを取得（自動クローズされる）
+	                try (InputStream is = part.getInputStream()) {
+
+	                    // DBに画像保存
+	                    int imageResult = taskDAO.insertTaskImage(taskId, is);
+
+	                    // 画像登録失敗チェック
+	                    if (imageResult <= 0) {
+	                        session.setAttribute("flashMessage", "画像の登録に失敗しました。");
+	                        response.sendRedirect(request.getContextPath() + "/dashboard");
+	                        return;
+	                    }
+	                }
+	            }
+	        }
+
+	        // 一覧画面へ戻る
+	        response.sendRedirect(request.getContextPath() + "/dashboard");
+
+	    } catch (Exception e) {
+	        // 想定外エラー（DB接続失敗など）
+	        e.printStackTrace();
+
+	        // サーバーエラーとして上位に投げる → error.jspへ
+	        throw new ServletException("タスク作成処理でエラーが発生しました。", e);
+	    }
+	}
 }

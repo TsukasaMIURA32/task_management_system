@@ -55,6 +55,11 @@
 					<button type="button" class="save-btn" id="saveEmailBtn">保存</button>
 					<button type="button" class="cancel-btn" id="cancelEmailBtn"><i class="fas fa-times"></i></button>
 				</div>
+				<div class="password-change-link-wrap">
+					<button type="button" id="openPasswordChangeBtn" class="password-change-link-btn">
+						パスワードを変更
+					</button>
+				</div>
 			</div>
 			
 		</div>
@@ -80,6 +85,33 @@
 				</form>
 			</div>
 
+			<!-- パスワード変更表示 -->
+			<div id="passwordChangeBox" class="hidden">
+				<p class="withdraw-confirm-text">パスワードを変更します</p>
+			
+				<div class="password-change-form">
+					<div class="password-area">
+						<label for="currentPasswordInput">現在のパスワード</label>
+						<input type="password" id="currentPasswordInput" >
+
+						<label for="currentPasswordInput">新しいパスワード</label>
+						<input type="password" id="newPasswordInput" placeholder="※8字以上、記号と数字1文字以上">
+
+						<label for="currentPasswordInput">新しいパスワード（確認用）</label>
+						<input type="password" id="confirmNewPasswordInput" placeholder="※8字以上、記号と数字1文字以上">
+					</div>
+					<p id="passwordChangeMessage" class="password-change-message"></p>
+				</div>
+			
+				<div class="withdraw-confirm-actions">
+					<button type="button" id="cancelPasswordChangeBtn" class="withdraw-cancel-btn">
+						キャンセル
+					</button>
+					<button type="button" id="savePasswordChangeBtn" class="save-btn">
+						変更する
+					</button>
+				</div>
+			</div>
 			<!-- 退会確認表示 -->
 			<div id="withdrawConfirmBox" class="hidden">
 				<p class="withdraw-confirm-text">本当に退会しますか？</p>
@@ -90,7 +122,11 @@
 						class="withdraw-confirm-btn">退会</button>
 				</div>
 			</div>
-			<form id="withdrawForm" action="<%=request.getContextPath()%>/user/delete" method="post"></form>
+			<form id="withdrawForm" action="<%=request.getContextPath()%>/user/withdraw" method="post">
+				<% if (request.getParameter("viewType") != null) { %>
+					<input type="hidden" name="viewType" value="<%= request.getParameter("viewType") %>">
+				<% } %>
+			</form>
 
 		</div>
 	</div>
