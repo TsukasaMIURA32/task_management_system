@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import task_management_system.com.task_management.dao.UserDAO;
-import task_management_system.com.task_management.dto.UserDTO;
+import task_management_system.com.task_management.util.PasswordUtil;
 
 @WebServlet("/resetPassword")
 public class ResetPasswordServlet extends HttpServlet {
@@ -61,23 +61,30 @@ public class ResetPasswordServlet extends HttpServlet {
 
         UserDAO userDAO = new UserDAO();
 
-        // メールアドレス存在チェック
+        // メール存在チェック
         if (!userDAO.existsByEmail(email)) {
             request.setAttribute("error", "このメールアドレスは登録されていません。");
             request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
             return;
         }
 
-        UserDTO user = new UserDTO();
-        user.setEmail(email);
-        user.setPassword(newPassword);
+        try {
+            // ★パスワードをハッシュ化
+            String hashedPassword = PasswordUtil.hashPassword(newPassword);
 
-        boolean result = userDAO.updatePasswordByEmail(email, newPassword);
+            // ★DAOにはハッシュを渡す
+            boolean result = userDAO.updatePasswordByEmail(email, hashedPassword);
 
-        if (result) {
-            response.sendRedirect(request.getContextPath() + "/resetComplete.jsp");
-        } else {
-            request.setAttribute("error", "パスワードの更新に失敗しました。");
+            if (result) {
+                response.sendRedirect(request.getContextPath() + "/resetComplete.jsp");
+            } else {
+                request.setAttribute("error", "パスワードの更新に失敗しました。");
+                request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "システムエラーが発生しました。");
             request.getRequestDispatcher("/resetPassword.jsp").forward(request, response);
         }
     }

@@ -1,6 +1,5 @@
 package task_management_system.com.task_management.dao;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,7 +40,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
 
             ps.setString(1, user.getUserName());
             ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
+            ps.setString(3, user.getPassword()); // ハッシュ済みパスワードを保存
             ps.setInt(4, user.getRole());
 
             return ps.executeUpdate();
@@ -123,36 +122,13 @@ public class UserDAO extends BaseDAO<UserDTO> {
         return null;
     }
 
+    /**
+     * 旧ログイン用。
+     * ハッシュ化対応後は、LoginServlet側で
+     * findByEmail() + PasswordUtil.matches() を使うこと。
+     */
     public UserDTO login(String email, String password) {
-        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-
-//        System.out.println("UserDAO.login start");
-
-        try (Connection con = DBCon.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-//            System.out.println("DB接続OK");
-
-            ps.setString(1, email);
-            ps.setString(2, password);
-
-//            System.out.println("SQL実行前");
-
-            try (ResultSet rs = ps.executeQuery()) {
-//                System.out.println("SQL実行後");
-                if (rs.next()) {
-//                    System.out.println("ユーザー見つかった");
-                    return mapRow(rs);
-                }
-            }
-
-        } catch (SQLException e) {
-//            System.out.println("ログインSQLエラー");
-            e.printStackTrace();
-        }
-
-//        System.out.println("ユーザー見つからず");
-        return null;
+        return findByEmail(email);
     }
 
     public boolean updatePasswordByEmail(String email, String newPassword) {
@@ -161,18 +137,20 @@ public class UserDAO extends BaseDAO<UserDTO> {
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, newPassword);
+            ps.setString(1, newPassword); // ハッシュ済みパスワードを保存
             ps.setString(2, email);
 
             int count = ps.executeUpdate();
             return count > 0;
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            System.out.println("パスワード更新SQLエラー");
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
-    
+
     /**
      * 指定したroleのユーザー一覧を取得する
      */
@@ -233,7 +211,7 @@ public class UserDAO extends BaseDAO<UserDTO> {
 
         return userList;
     }
-    
+
     /**
      * 指定したユーザーの role を更新する
      */
@@ -255,24 +233,22 @@ public class UserDAO extends BaseDAO<UserDTO> {
 
         return 0;
     }
-    
+
     public int countAdminUsers() {
-    	String sql = "SELECT COUNT(*) FROM users WHERE role = 1";
+        String sql = "SELECT COUNT(*) FROM users WHERE role = 1";
 
-    	try (Connection conn = DBCon.getConnection();
-    		 PreparedStatement ps = conn.prepareStatement(sql);
-    		 ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBCon.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-    		if (rs.next()) {
-    			return rs.getInt(1);
-    		}
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
 
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-    	return 0;
+        return 0;
     }
-    
-    
 }
