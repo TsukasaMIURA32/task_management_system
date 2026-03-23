@@ -104,9 +104,6 @@
   cursor: pointer;
 }
 
-.manage-account-btn:hover {
-  background: #e6ebf2;
-}
 
 .user-menu-account-box {
   background: #ffffff;
@@ -143,6 +140,10 @@
   display: flex;
   align-items: center;
   padding: 0 18px;
+}
+
+.user-menu-link-item:hover{
+	cursor: pointer;
 }
 
  .border-bottom {
