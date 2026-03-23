@@ -12,17 +12,20 @@ import jakarta.servlet.http.HttpSession;
 
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
+import task_management_system.com.task_management.util.PasswordUtil;
 
-@WebServlet(name="LoginServlet", urlPatterns="/login")
+@WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
+    public LoginServlet() {
+        super();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
-        rd.forward(request, response);
+        request.getRequestDispatcher("/login.jsp").forward(request, response);
     }
 
     @Override
@@ -34,37 +37,83 @@ public class LoginServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        UserDAO dao = new UserDAO();
-        UserDTO loginUser = dao.login(email, password);
+        UserDAO userDAO = new UserDAO();
+     // メールでユーザー取得（パスワードはまだ見ない）
+        UserDTO user = userDAO.findByEmail(email);
 
-        // ===== ログイン失敗 =====
-        if (loginUser == null) {
+        if (user == null) {
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;
         }
 
-        // ===== 管理者申請中 =====
-        if (loginUser.getRole() == 2) {
+        String dbPassword = user.getPassword();
+        boolean loginSuccess = false;
+
+        // ① ハッシュ済みパスワードの場合
+        if (isHashedPassword(dbPassword)) {
+            loginSuccess = PasswordUtil.matches(password, dbPassword);
+        }
+        // ② 旧ユーザーの平文パスワードの場合
+        else {
+            if (password.equals(dbPassword)) {
+                loginSuccess = true;
+
+                // 初回ログイン成功時にハッシュ化してDB更新
+                String hashedPassword = PasswordUtil.hashPassword(password);
+                boolean updated = userDAO.updatePasswordByEmail(email, hashedPassword);
+
+                if (updated) {
+                    // セッションに入るUserDTOも最新状態にしておく
+                    user.setPassword(hashedPassword);
+                } else {
+                    request.setAttribute("error", "パスワード移行処理に失敗しました。");
+                    RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+                    rd.forward(request, response);
+                    return;
+                }
+            }
+        }
+
+        if (!loginSuccess) {
+            request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
+
+       // ===== 管理者申請中 =====
+        if (user.getRole() == 2) {
             request.setAttribute("error", "管理ユーザーは現在承認待ちです。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;
         }
 
-        // ===== セッション保存 =====
+        // セッション保存前にパスワードは消す
+        user.setPassword(null);
+      // ===== セッション保存 =====
         HttpSession session = request.getSession();
-        loginUser.setPassword(null);
-        session.setAttribute("loginUser", loginUser);
+        session.setAttribute("loginUser", user);
 
         // ===== 画面振り分け =====
-        if (loginUser.getRole() == 1) {
-            // 管理者
+        if (user.getRole() == 1) {
             response.sendRedirect(request.getContextPath() + "/admin/users");
         } else {
-            // 一般ユーザー
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
         }
+    }
+
+    /**
+     * bcrypt 形式のハッシュかどうかを判定
+     */
+    private boolean isHashedPassword(String password) {
+        if (password == null) {
+            return false;
+        }
+        return password.startsWith("$2a$")
+                || password.startsWith("$2b$")
+                || password.startsWith("$2y$");
     }
 }
