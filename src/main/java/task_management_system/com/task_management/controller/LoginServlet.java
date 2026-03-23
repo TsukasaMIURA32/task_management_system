@@ -82,18 +82,33 @@ public class LoginServlet extends HttpServlet {
             rd.forward(request, response);
             return;
         }
-
+        
 
         // セッション保存前にパスワードは消す
         user.setPassword(null);
       // ===== セッション保存 =====
         HttpSession session = request.getSession();
         session.setAttribute("loginUser", user);
-//        System.out.println("91行目"+user);
+        System.out.println("91行目"+user);
         // ===== 画面振り分け =====
+        
+        if(user.getRole() == 2) {
+
+        }
+        
         if (user.getRole() == 1) {
             response.sendRedirect(request.getContextPath() + "/admin/users");
-        } else {
+        } else if(user.getRole() ==2){
+//        	System.out.println("2に入った！");
+        	request.setAttribute("error", "管理ユーザー申請の承認待ちです。詳細は管理者にお問い合わせください。");
+	        request.getRequestDispatcher("/login.jsp").forward(request, response);
+	        return;
+        }else if(user.getRole() == 3) {
+//        	System.out.println("3に入った！");
+        	request.setAttribute("error", "管理ユーザー申請が却下されています。詳細は管理者にお問い合わせください。");
+	        request.getRequestDispatcher("/login.jsp").forward(request, response);
+	        return;
+        }else {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         }
     }
