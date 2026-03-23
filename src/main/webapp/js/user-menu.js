@@ -164,6 +164,119 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* -------------------------
+     パスワード変更
+  ------------------------- */
+  const openPasswordChangeBtn = document.getElementById("openPasswordChangeBtn");
+  const passwordChangeBox = document.getElementById("passwordChangeBox");
+  const currentPasswordInput = document.getElementById("currentPasswordInput");
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmNewPasswordInput = document.getElementById("confirmNewPasswordInput");
+  const passwordChangeMessage = document.getElementById("passwordChangeMessage");
+  const cancelPasswordChangeBtn = document.getElementById("cancelPasswordChangeBtn");
+  const savePasswordChangeBtn = document.getElementById("savePasswordChangeBtn");
+ 
+//  console.log(openPasswordChangeBtn);
+//  console.log(passwordChangeBox);
+//  console.log(currentPasswordInput);
+//  console.log(newPasswordInput);
+//  console.log(confirmNewPasswordInput);
+//  console.log(passwordChangeMessage);
+//  console.log(cancelPasswordChangeBtn);
+//  console.log(savePasswordChangeBtn);
+  
+   //  パスワード変更エリアの表示・非表示の関数  
+  function clearPasswordChangeForm() {
+    if (currentPasswordInput) currentPasswordInput.value = "";
+    if (newPasswordInput) newPasswordInput.value = "";
+    if (confirmNewPasswordInput) confirmNewPasswordInput.value = "";
+    if (passwordChangeMessage) passwordChangeMessage.textContent = "";
+  }
+
+  function showPasswordChangeBox() {
+    if (accountMenuDefault) {
+      accountMenuDefault.classList.add("hidden");
+    }
+    if (withdrawConfirmBox) {
+      withdrawConfirmBox.classList.add("hidden");
+    }
+    if (passwordChangeBox) {
+      passwordChangeBox.classList.remove("hidden");
+    }
+  }
+
+  function hidePasswordChangeBox() {
+    if (passwordChangeBox) {
+      passwordChangeBox.classList.add("hidden");
+    }
+    if (accountMenuDefault) {
+      accountMenuDefault.classList.remove("hidden");
+    }
+    clearPasswordChangeForm();
+  }
+  
+//  パスワード変更ボタンクリック時のイベント
+  if (openPasswordChangeBtn) {
+    openPasswordChangeBtn.addEventListener("click", function () {
+      showPasswordChangeBox();
+    });
+  }
+
+  if (cancelPasswordChangeBtn) {
+    cancelPasswordChangeBtn.addEventListener("click", function () {
+      hidePasswordChangeBox();
+    });
+  }
+//  パスワード変更の非同期処理
+  async function updatePassword() {
+    const currentPassword = currentPasswordInput ? currentPasswordInput.value : "";
+    const newPassword = newPasswordInput ? newPasswordInput.value : "";
+    const confirmNewPassword = confirmNewPasswordInput ? confirmNewPasswordInput.value : "";
+
+    if (passwordChangeMessage) {
+      passwordChangeMessage.textContent = "";
+    }
+
+    try {
+      const response = await fetch(window.contextPath + "/user/changepassword", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
+        body:
+          "currentPassword=" + encodeURIComponent(currentPassword) +
+          "&newPassword=" + encodeURIComponent(newPassword) +
+          "&confirmNewPassword=" + encodeURIComponent(confirmNewPassword)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (passwordChangeMessage) {
+          passwordChangeMessage.textContent = result.message;
+        }
+        setTimeout(function () {
+          hidePasswordChangeBox();
+        }, 1000);
+      } else {
+        if (passwordChangeMessage) {
+          passwordChangeMessage.textContent = result.message;
+        }
+      }
+    } catch (error) {
+      console.error("パスワード変更エラー:", error);
+      if (passwordChangeMessage) {
+        passwordChangeMessage.textContent = "パスワード変更に失敗しました。";
+      }
+    }
+  }
+
+  if (savePasswordChangeBtn) {
+    savePasswordChangeBtn.addEventListener("click", function () {
+      updatePassword();
+    });
+  }
+  
+  /* -------------------------
      退会
   ------------------------- */
   const withdrawBtn = document.getElementById("withdrawBtn");

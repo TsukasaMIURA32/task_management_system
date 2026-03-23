@@ -17,8 +17,25 @@
 }
 
 .edit-modal-shell {
-  width: 100%;
-  max-width: 600px;
+	width: 100%;
+	max-width: 600px;
+	max-height: calc(100vh - 32px);
+	overflow: visible;
+	position: relative;
+	}
+	
+.edit-modal-shell .note-form {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 160px);
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.edit-modal-shell .task-scroll-box {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* 編集モーダルでも色クラスを note-form に当てる */
@@ -77,4 +94,9 @@
 .update-date{
 	text-align: right;
 	font-size: 12px;
+}
+
+
+.popover-panel.show{
+	margin: 0px;
 }
