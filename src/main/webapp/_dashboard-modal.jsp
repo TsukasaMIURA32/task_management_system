@@ -28,85 +28,85 @@ if (editTask != null && editTask.getImageIdList() != null) {
 			<input type="hidden" name="colorId" id="editNoteColorId"
 				value="<%=editTask != null ? editTask.getColorId() : 1%>">
 			<input type="hidden" name="deleteImageIds" id="editDeleteImageIds" value="">
-
-			<!-- 画像エリアは1つだけ -->
-			<div id="editImagePreviewArea"
-				class="image-preview-area <%=editImageCount > 0 ? "" : "hidden"%>">
-				<div id="editImagePreviewList"
-					class="image-preview-list <%=editImageGridClass%>">
-					<%
-					if (editImageCount > 0) {
-						for (Integer imageId : editImageIdList) {
-					%>
-					<div class="image-preview-item existing-image-item"
-						data-image-id="<%=imageId%>" data-image-type="existing">
-						<img
-							src="<%=request.getContextPath()%>/task/image?imageId=<%=imageId%>"
-							alt="タスク画像">
-						<button type="button" class="image-remove-button"
-							data-image-id="<%=imageId%>" data-image-type="existing">×</button>
-					</div>
-					<%
+			<div class="task-scroll-box">
+				<!-- 画像エリアは1つだけ -->
+				<div id="editImagePreviewArea"
+					class="image-preview-area <%=editImageCount > 0 ? "" : "hidden"%>">
+					<div id="editImagePreviewList"
+						class="image-preview-list <%=editImageGridClass%>">
+						<%
+						if (editImageCount > 0) {
+							for (Integer imageId : editImageIdList) {
+						%>
+						<div class="image-preview-item existing-image-item"
+							data-image-id="<%=imageId%>" data-image-type="existing">
+							<img
+								src="<%=request.getContextPath()%>/task/image?imageId=<%=imageId%>"
+								alt="タスク画像">
+							<button type="button" class="image-remove-button"
+								data-image-id="<%=imageId%>" data-image-type="existing">×</button>
+						</div>
+						<%
+							}
 						}
-					}
-					%>
-				</div>
-			</div>
-
-			<input type="file" id="editNoteImage" name="newImages"
-				accept="image/*" multiple hidden>
-			<div class="task-content-box">
-				<input type="text" id="editNoteTitle" name="title" placeholder="タイトル"
-					value="<%=editTask != null && editTask.getTitle() != null ? editTask.getTitle() : ""%>">
-	
-				<div class="textarea-wrap">
-					<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
-				</div>
-				<div class="shared-users-text" id="editSharedUsersText"></div>
-				<div class="update-date">最終更新日時:
-					<div id="updateDate">
-						<%=editTask != null && editTask.getUpdatedAt() != null ? editTask.getUpdatedAt() : ""%>
+						%>
 					</div>
 				</div>
-			</div>
-			<div class="form-actions">
-				<div class="note-tools">
-					<button type="button" class="tool-button" aria-label="装飾">
-						<i class="fas fa-underline"></i>
-					</button>
-
-					<button type="button" class="tool-button"
-						data-edit-popover="editColorPopover" aria-label="背景色">
-						<i class="fas fa-palette"></i>
-					</button>
-
-					<button type="button" class="tool-button" aria-label="通知">
-						<i class="far fa-bell"></i>
-					</button>
-
-					<button type="button" class="tool-button" id="openEditMemberModal" aria-label="メンバー追加">
-					    <i class="fas fa-user-plus"></i>
-					</button>
-
-					<button type="button" class="tool-button" id="editImageButton"
-						aria-label="画像追加">
-						<i class="far fa-image"></i>
-					</button>
-
-					<button type="button" class="tool-button" aria-label="アーカイブ">
-						<i class="fas fa-archive"></i>
-					</button>
-
-					<button type="button" class="tool-button"
-						data-edit-popover="editMorePopover" aria-label="詳細メニュー">
-						<i class="fas fa-ellipsis-v"></i>
-					</button>
+	
+				<input type="file" id="editNoteImage" name="newImages"
+					accept="image/*" multiple hidden>
+				<div class="task-content-box">
+					<input type="text" id="editNoteTitle" name="title" placeholder="タイトル"
+						value="<%=editTask != null && editTask.getTitle() != null ? editTask.getTitle() : ""%>">
+		
+					<div class="textarea-wrap">
+						<textarea id="editNoteContent" name="content" placeholder="メモを入力..."><%=editTask != null && editTask.getContent() != null ? editTask.getContent() : ""%></textarea>
+					</div>
+					<div class="shared-users-text" id="editSharedUsersText"></div>
+					<div class="update-date">最終更新日時:
+						<div id="updateDate">
+							<%=editTask != null && editTask.getUpdatedAt() != null ? editTask.getUpdatedAt() : ""%>
+						</div>
+					</div>
 				</div>
-
-				<div class="action-buttons">
-					<button type="button" class="submit-button" id="closeEditModal">閉じる</button>
+				<div class="form-actions">
+					<div class="note-tools">
+						<button type="button" class="tool-button" aria-label="装飾">
+							<i class="fas fa-underline"></i>
+						</button>
+	
+						<button type="button" class="tool-button"
+							data-edit-popover="editColorPopover" aria-label="背景色">
+							<i class="fas fa-palette"></i>
+						</button>
+	
+						<button type="button" class="tool-button" aria-label="通知">
+							<i class="far fa-bell"></i>
+						</button>
+	
+						<button type="button" class="tool-button" id="openEditMemberModal" aria-label="メンバー追加">
+						    <i class="fas fa-user-plus"></i>
+						</button>
+	
+						<button type="button" class="tool-button" id="editImageButton"
+							aria-label="画像追加">
+							<i class="far fa-image"></i>
+						</button>
+	
+						<button type="button" class="tool-button" aria-label="アーカイブ">
+							<i class="fas fa-archive"></i>
+						</button>
+	
+						<button type="button" class="tool-button"
+							data-edit-popover="editMorePopover" aria-label="詳細メニュー">
+							<i class="fas fa-ellipsis-v"></i>
+						</button>
+					</div>
+	
+					<div class="action-buttons">
+						<button type="button" class="submit-button" id="closeEditModal">閉じる</button>
+					</div>
 				</div>
-
 				<div class="tool-popovers">
 					<div class="popover-panel" id="editColorPopover">
 						<div class="color-options">

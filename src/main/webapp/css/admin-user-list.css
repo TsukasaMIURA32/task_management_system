@@ -192,7 +192,7 @@ body {
      grid-template-columns: auto minmax(100px, 1fr) minmax(150px, 2fr) auto;
      gap: 16px;
      align-items: center;
-	 text-align: center;
+	 text-align: left;
      padding: 3px 24px;
      border-bottom: 1px solid #e8eaed;
      background: #f8f9fa;

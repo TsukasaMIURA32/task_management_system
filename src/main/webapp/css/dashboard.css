@@ -423,10 +423,9 @@ body {
 .popover-panel {
   position: absolute;
   z-index: 20;
-
   display: none;
-  min-width: 180px;
-  padding: 10px;
+/*  min-width: 180px;*/
+  padding: 5px;
   border: 1px solid #dadce0;
   border-radius: 12px;
   background: #fff;
@@ -510,6 +509,7 @@ body {
 
 .popover-action.danger {
   color: #c5221f;
+  padding:0 10px;
 }
 
 /* ===============================
