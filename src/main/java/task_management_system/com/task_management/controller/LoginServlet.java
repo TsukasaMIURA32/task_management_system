@@ -89,7 +89,7 @@ public class LoginServlet extends HttpServlet {
       // ===== セッション保存 =====
         HttpSession session = request.getSession();
         session.setAttribute("loginUser", user);
-        System.out.println("91行目"+user);
+//        System.out.println("91行目"+user);
         // ===== 画面振り分け =====
         
         if(user.getRole() == 2) {
