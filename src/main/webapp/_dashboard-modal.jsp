@@ -44,7 +44,7 @@ if (editTask != null && editTask.getImageIdList() != null) {
 								src="<%=request.getContextPath()%>/task/image?imageId=<%=imageId%>"
 								alt="タスク画像">
 							<button type="button" class="image-remove-button"
-								data-image-id="<%=imageId%>" data-image-type="existing">×</button>
+								data-image-id="<%=imageId%>" data-image-type="existing"><i class="fas fa-trash-alt"></i></button>
 						</div>
 						<%
 							}

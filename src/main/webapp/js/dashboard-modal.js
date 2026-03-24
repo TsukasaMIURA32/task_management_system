@@ -376,7 +376,7 @@ if (
         item.innerHTML =
           '<img src="' + window.contextPath + '/task/image?imageId=' + imageId + '" alt="タスク画像">' +
           '<button type="button" class="image-remove-button" ' +
-          'data-image-id="' + imageId + '" data-image-type="existing">×</button>';
+          'data-image-id="' + imageId + '" data-image-type="existing"><i class="fas fa-trash-alt"></i></button>';
 
         editImagePreviewList.appendChild(item);
       }
@@ -403,7 +403,7 @@ if (
           item.innerHTML =
             '<img src="' + e.target.result + '" alt="新規画像">' +
             '<button type="button" class="image-remove-button" ' +
-            'data-image-type="new" data-new-index="' + index + '">×</button>';
+            'data-image-type="new" data-new-index="' + index + '"><i class="fas fa-trash-alt"></i></button>';
 
           editImagePreviewList.appendChild(item);
           updatePreviewGridClass();
@@ -563,8 +563,8 @@ if (
       editModalOverlay.classList.add("show");
 
 	  } catch (error) {
-	    console.error("タスク詳細取得エラー:", error);
-	    alert(error.message);
+		  console.error("タスク詳細取得エラー:", error);
+		  showToastMessage(error.message);
 	  }
   }
 
@@ -579,7 +579,25 @@ if (
       await openEditModalByAjax(noteId);
     });
   }
+  /* エラーメッセージの表示 */
+  function showToastMessage(message) {
+    let toast = document.getElementById("toastMessage");
 
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "toastMessage";
+      toast.className = "toast-message";
+      document.body.appendChild(toast);
+    }
+
+    toast.innerHTML = '<i class="fas fa-info-circle"></i><span>' + message + '</span>';
+
+    toast.classList.add("show");
+
+    setTimeout(function () {
+      toast.classList.remove("show");
+    }, 3000);
+  }
   /* ==========================================================
      編集モーダルの基本イベント
   ========================================================== */

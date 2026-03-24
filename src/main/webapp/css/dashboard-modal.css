@@ -100,3 +100,22 @@
 .popover-panel.show{
 	margin: 0px;
 }
+
+/*トーストメッセージ*/
+.toast-message {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 3000;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.toast-message.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

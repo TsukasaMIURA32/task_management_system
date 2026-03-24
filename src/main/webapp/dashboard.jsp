@@ -176,20 +176,6 @@
 									</div>
 								</div>
 								<input type="hidden" id="noteColorId" name="colorId" value="1">
-								<!-- メンバー追加 -->
-<!--								<div class="popover-panel" id="memberPopover">-->
-<!--									<div class="member-selector" data-mode="create">-->
-<!--										<div class="mini-form">-->
-<!--											<input type="text" class="member-keyword-input"-->
-<!--												placeholder="名前またはメールアドレスを入力">-->
-<!--											<button type="button" class="add-member-button">追加</button>-->
-<!--										</div>-->
-								
-<!--										<div class="member-search-result"></div>-->
-<!--										<div class="member-preview"></div>-->
-<!--										<div class="shared-user-ids-container"></div>-->
-<!--									</div>-->
-<!--								</div>-->
 
 								<!-- 詳細メニュー -->
 								<div class="popover-panel" id="morePopover">
@@ -302,9 +288,6 @@
 				</section>
 			</div>
 			
-<!--			<form id="taskDetailForm" action="<%=request.getContextPath()%>/task/detail" method="get">-->
-<!--				<input type="hidden" name="taskId" id="detailTaskId">-->
-<!--			</form>-->
 		</main>
 
 		<jsp:include page="_dashboard-modal.jsp" />

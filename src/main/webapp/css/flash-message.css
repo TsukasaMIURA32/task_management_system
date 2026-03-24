@@ -27,6 +27,11 @@
 	opacity: 0;
 	animation: toastFadeIn 0.25s ease-out forwards;
 }
+.toast-message.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 
 @keyframes toastFadeIn {
 	from {
