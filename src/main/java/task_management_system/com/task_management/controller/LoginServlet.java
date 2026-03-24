@@ -17,6 +17,7 @@ import task_management_system.com.task_management.util.PasswordUtil;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final int MAX_LOGIN_FAIL_COUNT = 5;
 
     public LoginServlet() {
         super();
@@ -38,11 +39,18 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         UserDAO userDAO = new UserDAO();
-     // メールでユーザー取得（パスワードはまだ見ない）
         UserDTO user = userDAO.findByEmail(email);
 
         if (user == null) {
             request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
+
+        // ===== アカウントロック確認 =====
+        if (user.isAccountLocked()) {
+            request.setAttribute("error", "このアカウントはロックされています。パスワード再設定または管理者にお問い合わせください。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;
@@ -76,38 +84,60 @@ public class LoginServlet extends HttpServlet {
             }
         }
 
+        // ===== ログイン失敗時 =====
         if (!loginSuccess) {
-            request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
+            userDAO.incrementLoginFailCount(user.getId());
+
+            int failCount = user.getLoginFailCount() + 1;
+
+            if (failCount >= MAX_LOGIN_FAIL_COUNT) {
+                userDAO.lockAccount(user.getId());
+                request.setAttribute("error", "ログインに5回失敗したため、アカウントがロックされました。");
+            } else {
+                request.setAttribute("error",
+                        "メールアドレスまたはパスワードが違います。"
+                        + "（" + failCount + "回失敗 / " + MAX_LOGIN_FAIL_COUNT + "回でロック）");
+            }
+
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;
         }
+
+
+        // ===== ログイン成功時は失敗回数リセット =====
+        userDAO.resetLoginFailCount(user.getId());
+
+        // ===== 管理者申請中 =====
+        if (user.getRole() == 2) {
+            request.setAttribute("error", "管理ユーザーは現在承認待ちです。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
+
+        // ===== 管理者申請却下 =====
+        if (user.getRole() == 3) {
+            request.setAttribute("error", "管理ユーザー申請が却下されています。詳細は管理者にお問い合わせください。");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            rd.forward(request, response);
+            return;
+        }
+
         
 
         // セッション保存前にパスワードは消す
         user.setPassword(null);
-      // ===== セッション保存 =====
+
+        // ===== セッション保存 =====
         HttpSession session = request.getSession();
         session.setAttribute("loginUser", user);
 //        System.out.println("91行目"+user);
         // ===== 画面振り分け =====
         
-        if(user.getRole() == 2) {
-
-        }
-        
-        if (user.getRole() == 1) {
+      　 if (user.getRole() == 1) {
             response.sendRedirect(request.getContextPath() + "/admin/users");
-        } else if(user.getRole() ==2){
-//        	System.out.println("2に入った！");
-        	request.setAttribute("error", "管理ユーザー申請の承認待ちです。詳細は管理者にお問い合わせください。");
-	        request.getRequestDispatcher("/login.jsp").forward(request, response);
-	        return;
-        }else if(user.getRole() == 3) {
-//        	System.out.println("3に入った！");
-        	request.setAttribute("error", "管理ユーザー申請が却下されています。詳細は管理者にお問い合わせください。");
-	        request.getRequestDispatcher("/login.jsp").forward(request, response);
-	        return;
+       
         }else {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         }

@@ -97,11 +97,7 @@ public class RegisterServlet extends HttpServlet {
         UserDAO userDao = new UserDAO();
 
         // メール重複チェック
-        if (userDao.existsByEmail(email)) {
-            request.setAttribute("error", "このメールアドレスは既に登録されています。");
-
         UserDTO existingUser = userDao.findByEmail(email);
-
         if (existingUser != null) {
 //        	System.out.println(existingUser);
             if (existingUser.getRole() == 3) {
@@ -111,7 +107,6 @@ public class RegisterServlet extends HttpServlet {
             }else {
                 request.setAttribute("error", "このメールアドレスは既に登録されています。");
             }
-
             request.getRequestDispatcher("/register.jsp").forward(request, response);
             return;
         }
@@ -141,5 +136,4 @@ public class RegisterServlet extends HttpServlet {
             request.getRequestDispatcher("/register.jsp").forward(request, response);
         }
     }
-}
 }

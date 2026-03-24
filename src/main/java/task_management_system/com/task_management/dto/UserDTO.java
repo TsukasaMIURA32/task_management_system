@@ -7,6 +7,8 @@ public class UserDTO extends BaseDTO {
     private String email;
     private String password;
     private int role;
+    private int loginFailCount;
+    private boolean accountLocked;
 
     public UserDTO() {
     }
@@ -41,5 +43,21 @@ public class UserDTO extends BaseDTO {
 
     public void setRole(int role) {
         this.role = role;
+    }
+    
+    public int getLoginFailCount() {
+        return loginFailCount;
+    }
+
+    public void setLoginFailCount(int loginFailCount) {
+        this.loginFailCount = loginFailCount;
+    }
+
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
     }
 }
