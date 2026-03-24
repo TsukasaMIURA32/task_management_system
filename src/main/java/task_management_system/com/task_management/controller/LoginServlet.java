@@ -104,6 +104,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+
         // ===== ログイン成功時は失敗回数リセット =====
         userDAO.resetLoginFailCount(user.getId());
 
@@ -123,18 +124,22 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        
+
         // セッション保存前にパスワードは消す
         user.setPassword(null);
 
         // ===== セッション保存 =====
         HttpSession session = request.getSession();
         session.setAttribute("loginUser", user);
-
+//        System.out.println("91行目"+user);
         // ===== 画面振り分け =====
-        if (user.getRole() == 1) {
+        
+      　 if (user.getRole() == 1) {
             response.sendRedirect(request.getContextPath() + "/admin/users");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+       
+        }else {
+            response.sendRedirect(request.getContextPath() + "/dashboard");
         }
     }
 
