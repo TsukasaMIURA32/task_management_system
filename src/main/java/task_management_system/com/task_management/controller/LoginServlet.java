@@ -135,7 +135,7 @@ public class LoginServlet extends HttpServlet {
 //        System.out.println("91行目"+user);
         // ===== 画面振り分け =====
         
-      　 if (user.getRole() == 1) {
+        if (user.getRole() == 1) {
             response.sendRedirect(request.getContextPath() + "/admin/users");
        
         }else {
