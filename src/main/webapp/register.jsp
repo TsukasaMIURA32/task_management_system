@@ -33,25 +33,24 @@
                        required>
             </div>
 
-            <div class="form-group">
-    			<label for="email">メールアドレス</label>
-    			<input type="email"
-          			 id="email"
-          			 name="email"
-          			 value="<%= request.getAttribute("email") != null ? request.getAttribute("email") : "" %>"
-           			required
-          			 pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-           			title="メールアドレスの形式で入力してください（例: sample@example.com）">
-           			
-           			<%
-    					String emailError = (String) request.getAttribute("emailError");
-    					if (emailError != null) {
-    				%>
-        				<p class="error-message"><%= emailError %></p>
-    				<%
-    					}
-    				%>
-			</div>
+	<div class="form-group">
+    	<label for="email">メールアドレス</label>
+   	 	<input type="email"
+           id="email"
+           name="email"
+           value="<%= request.getAttribute("email") != null ? request.getAttribute("email") : "" %>"
+           required
+           title="メールアドレスの形式で入力してください（例: sample@example.com）">
+
+   	 <%
+        String emailError = (String) request.getAttribute("emailError");
+        if (emailError != null) {
+   	 %>
+        <p class="error-message"><%= emailError %></p>
+    	<%
+        }
+    	%>
+	</div>
 
             <div class="form-group">
                 <label for="password">パスワード</label>

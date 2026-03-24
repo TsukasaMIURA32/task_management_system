@@ -26,6 +26,8 @@ public class UserDAO extends BaseDAO<UserDTO> {
         user.setEmail(rs.getString("email"));
         user.setPassword(rs.getString("password"));
         user.setRole(rs.getInt("role"));
+        user.setLoginFailCount(rs.getInt("login_fail_count"));
+        user.setAccountLocked(rs.getBoolean("account_locked"));
 
         return user;
     }
@@ -132,7 +134,13 @@ public class UserDAO extends BaseDAO<UserDTO> {
     }
 
     public boolean updatePasswordByEmail(String email, String newPassword) {
-        String sql = "UPDATE users SET password = ?, updated_at = NOW() WHERE email = ?";
+        String sql = "UPDATE users "
+                   + "SET password = ?, "
+                   + "login_fail_count = 0, "
+                   + "account_locked = 0, "
+                   + "locked_at = NULL, "
+                   + "updated_at = NOW() "
+                   + "WHERE email = ?";
 
         try (Connection con = DBCon.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -246,6 +254,94 @@ public class UserDAO extends BaseDAO<UserDTO> {
             }
 
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    
+    /**
+     * ログイン失敗回数を1増やす
+     */
+    public int incrementLoginFailCount(int userId) {
+        String sql = "UPDATE users "
+                   + "SET login_fail_count = login_fail_count + 1, updated_at = NOW() "
+                   + "WHERE id = ?";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("ログイン失敗回数更新SQLエラー");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    
+    /**
+     * ログイン成功時に失敗回数をリセットする
+     */
+    public int resetLoginFailCount(int userId) {
+        String sql = "UPDATE users "
+                   + "SET login_fail_count = 0, updated_at = NOW() "
+                   + "WHERE id = ?";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("ログイン失敗回数リセットSQLエラー");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    
+    /**
+     * アカウントをロックする
+     */
+    public int lockAccount(int userId) {
+        String sql = "UPDATE users "
+                   + "SET account_locked = 1, locked_at = NOW(), updated_at = NOW() "
+                   + "WHERE id = ?";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("アカウントロックSQLエラー");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    
+    /**
+     * アカウントロックを解除する
+     */
+    public int unlockAccount(int userId) {
+        String sql = "UPDATE users "
+                   + "SET account_locked = 0, login_fail_count = 0, locked_at = NULL, updated_at = NOW() "
+                   + "WHERE id = ?";
+
+        try (Connection con = DBCon.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("アカウントロック解除SQLエラー");
             e.printStackTrace();
         }
 
