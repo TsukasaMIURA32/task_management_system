@@ -58,7 +58,7 @@ public class TaskUpdateServlet extends HttpServlet {
         String colorIdStr = request.getParameter("colorId");       // 色ID（文字列）
         String[] sharedUserIds = request.getParameterValues("sharedUserIds"); // 共有ユーザー
         String deleteImageIds = request.getParameter("deleteImageIds");       // 削除対象画像ID一覧
-
+        System.out.println(taskIdStr);
         /* =========================
            バリデーション
         ========================= */
@@ -67,6 +67,7 @@ public class TaskUpdateServlet extends HttpServlet {
         int taskId;
         try {
             taskId = Integer.parseInt(taskIdStr);
+            System.out.println(taskId);
         } catch (NumberFormatException e) {
             session.setAttribute("flashMessage", "タスクの更新ができませんでした。");
             response.sendRedirect(request.getContextPath() + "/dashboard");

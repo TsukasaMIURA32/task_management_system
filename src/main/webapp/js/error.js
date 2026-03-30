@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (document.referrer) {
 				history.back();
 			} else {
-				window.location.href = "/dashboard";
+				window.location.href = "/login";
 			}
 		});
 	}

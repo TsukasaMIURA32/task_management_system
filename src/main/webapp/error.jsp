@@ -39,10 +39,10 @@ boolean isLoggedIn = (loginUser != null);
 	<div class="error-container">
 		<h1 class="error-title"><i class="fas fa-bug"></i><%= title %></h1>
 		<p class="error-message"><%= message %></p>
-		<a href="#" id="backButton" class="back-link">
-			前のページに戻る
+		<a href="<%=request.getContextPath()%>/login" id="backButton" class="back-link">
+			ログインページに戻る
 		</a>
 	</div>
-<script src="<%=request.getContextPath()%>/js/error.js"></script>
+<!--<script src="<%=request.getContextPath()%>/js/error.js"></script>-->
 </body>
 </html>

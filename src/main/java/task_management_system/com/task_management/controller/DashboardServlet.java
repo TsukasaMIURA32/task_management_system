@@ -31,9 +31,15 @@ public class DashboardServlet extends HttpServlet {
 		}
 
 		if (loginUser == null) {
-		    response.sendRedirect(request.getContextPath() + "/login.jsp");
+		    response.sendRedirect(request.getContextPath() + "/login");
 		    return;
 		}
+		
+		if(loginUser.getRole() != 0) {
+			response.sendRedirect(request.getContextPath() + "/login");
+			return;
+		}
+		
 		int loginUserId = loginUser.getId();
 //		System.out.println("Login success user = " + loginUser);
 //		System.out.println("session id at login = " + request.getSession().getId());

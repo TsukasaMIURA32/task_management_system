@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const editEmailBtn = document.getElementById("editEmailBtn");
   const saveEmailBtn = document.getElementById("saveEmailBtn");
   const cancelEmailBtn = document.getElementById("cancelEmailBtn");
+  const emailChangeMessage = document.getElementById("emailChangeMessage");
 
   // ===== 名前編集 =====
   const nameDisplay = document.getElementById("nameDisplay");
@@ -51,20 +52,32 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveNameBtn = document.getElementById("saveNameBtn");
   const cancelNameBtn = document.getElementById("cancelNameBtn");
 
+  // ===== パスワード変更 =====
+  const openPasswordChangeBtn = document.getElementById("openPasswordChangeBtn");
+  const passwordChangeBox = document.getElementById("passwordChangeBox");
+  const currentPasswordInput = document.getElementById("currentPasswordInput");
+  const newPasswordInput = document.getElementById("newPasswordInput");
+  const confirmNewPasswordInput = document.getElementById("confirmNewPasswordInput");
+  const passwordChangeMessage = document.getElementById("passwordChangeMessage");
+  const cancelPasswordChangeBtn = document.getElementById("cancelPasswordChangeBtn");
+  const savePasswordChangeBtn = document.getElementById("savePasswordChangeBtn");
+
+  // ===== 退会 =====
+  const withdrawBtn = document.getElementById("withdrawBtn");
+  const accountMenuDefault = document.getElementById("accountMenuDefault");
+  const withdrawConfirmBox = document.getElementById("withdrawConfirmBox");
+  const cancelWithdrawBtn = document.getElementById("cancelWithdrawBtn");
+  const confirmWithdrawBtn = document.getElementById("confirmWithdrawBtn");
+  const withdrawForm = document.getElementById("withdrawForm");
+
   /* -------------------------
-     共通：プロフィール更新
+     名前更新
   ------------------------- */
-  async function updateUserProfile() {
-    const newName = nameInput.value.trim();
-    const newEmail = emailInput.value.trim();
+  async function updateUserName() {
+    const newName = nameInput ? nameInput.value.trim() : "";
 
     if (newName === "") {
       alert("名前を入力してください。");
-      return false;
-    }
-
-    if (newEmail === "") {
-      alert("メールアドレスを入力してください。");
       return false;
     }
 
@@ -75,8 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
         },
         body: new URLSearchParams({
-          userName: newName,
-          email: newEmail
+          userName: newName
         }).toString()
       });
 
@@ -87,16 +99,79 @@ document.addEventListener("DOMContentLoaded", function () {
         return false;
       }
 
-      nameText.textContent = data.userName;
-      emailText.textContent = data.email;
-
-      nameInput.value = data.userName;
-      emailInput.value = data.email;
+      if (nameText) {
+        nameText.textContent = data.userName;
+      }
+      if (nameInput) {
+        nameInput.value = data.userName;
+      }
 
       return true;
     } catch (error) {
-      console.error(error);
+      console.error("名前更新エラー:", error);
       alert("更新中にエラーが発生しました。");
+      return false;
+    }
+  }
+
+  /* -------------------------
+     メール更新
+  ------------------------- */
+  async function updateUserEmail() {
+    const newEmail = emailInput ? emailInput.value.trim() : "";
+
+    if (emailChangeMessage) {
+      emailChangeMessage.textContent = "";
+    }
+
+    if (newEmail === "") {
+      if (emailChangeMessage) {
+        emailChangeMessage.textContent = "メールアドレスを入力してください。";
+      }
+      return false;
+    }
+
+    if (emailInput && !emailInput.checkValidity()) {
+      emailInput.reportValidity();
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${window.contextPath}/user/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
+        body: new URLSearchParams({
+          email: newEmail
+        }).toString()
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        if (emailChangeMessage) {
+          emailChangeMessage.textContent = data.message || "更新できませんでした。";
+        }
+        return false;
+      }
+
+      if (emailText) {
+        emailText.textContent = data.email;
+      }
+      if (emailInput) {
+        emailInput.value = data.email;
+      }
+      if (emailChangeMessage) {
+        emailChangeMessage.textContent = "";
+      }
+
+      return true;
+    } catch (error) {
+      console.error("メール更新エラー:", error);
+      if (emailChangeMessage) {
+        emailChangeMessage.textContent = "更新中にエラーが発生しました。";
+      }
       return false;
     }
   }
@@ -104,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /* -------------------------
      メール編集
   ------------------------- */
-  if (editEmailBtn) {
+  if (editEmailBtn && emailDisplay && emailEdit && emailInput) {
     editEmailBtn.addEventListener("click", function () {
       emailDisplay.classList.add("hidden");
       emailEdit.classList.remove("hidden");
@@ -113,9 +188,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (saveEmailBtn) {
+  if (saveEmailBtn && emailEdit && emailDisplay) {
     saveEmailBtn.addEventListener("click", async function () {
-      const result = await updateUserProfile();
+      const result = await updateUserEmail();
 
       if (result) {
         emailEdit.classList.add("hidden");
@@ -124,18 +199,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (cancelEmailBtn) {
+  if (emailInput && emailChangeMessage) {
+    emailInput.addEventListener("input", function () {
+      emailChangeMessage.textContent = "";
+    });
+  }
+
+  if (cancelEmailBtn && emailInput && emailText && emailEdit && emailDisplay) {
     cancelEmailBtn.addEventListener("click", function () {
       emailInput.value = emailText.textContent;
       emailEdit.classList.add("hidden");
       emailDisplay.classList.remove("hidden");
+      emailChangeMessage.textContent = "";
     });
   }
 
   /* -------------------------
      名前編集
   ------------------------- */
-  if (editNameBtn) {
+  if (editNameBtn && nameDisplay && nameEdit && nameInput) {
     editNameBtn.addEventListener("click", function () {
       nameDisplay.classList.add("hidden");
       nameEdit.classList.remove("hidden");
@@ -144,9 +226,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (saveNameBtn) {
+  if (saveNameBtn && nameEdit && nameDisplay) {
     saveNameBtn.addEventListener("click", async function () {
-      const result = await updateUserProfile();
+      const result = await updateUserName();
 
       if (result) {
         nameEdit.classList.add("hidden");
@@ -155,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (cancelNameBtn) {
+  if (cancelNameBtn && nameInput && nameText && nameEdit && nameDisplay) {
     cancelNameBtn.addEventListener("click", function () {
       nameInput.value = nameText.textContent;
       nameEdit.classList.add("hidden");
@@ -166,25 +248,6 @@ document.addEventListener("DOMContentLoaded", function () {
   /* -------------------------
      パスワード変更
   ------------------------- */
-  const openPasswordChangeBtn = document.getElementById("openPasswordChangeBtn");
-  const passwordChangeBox = document.getElementById("passwordChangeBox");
-  const currentPasswordInput = document.getElementById("currentPasswordInput");
-  const newPasswordInput = document.getElementById("newPasswordInput");
-  const confirmNewPasswordInput = document.getElementById("confirmNewPasswordInput");
-  const passwordChangeMessage = document.getElementById("passwordChangeMessage");
-  const cancelPasswordChangeBtn = document.getElementById("cancelPasswordChangeBtn");
-  const savePasswordChangeBtn = document.getElementById("savePasswordChangeBtn");
- 
-//  console.log(openPasswordChangeBtn);
-//  console.log(passwordChangeBox);
-//  console.log(currentPasswordInput);
-//  console.log(newPasswordInput);
-//  console.log(confirmNewPasswordInput);
-//  console.log(passwordChangeMessage);
-//  console.log(cancelPasswordChangeBtn);
-//  console.log(savePasswordChangeBtn);
-  
-   //  パスワード変更エリアの表示・非表示の関数  
   function clearPasswordChangeForm() {
     if (currentPasswordInput) currentPasswordInput.value = "";
     if (newPasswordInput) newPasswordInput.value = "";
@@ -213,8 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     clearPasswordChangeForm();
   }
-  
-//  パスワード変更ボタンクリック時のイベント
+
   if (openPasswordChangeBtn) {
     openPasswordChangeBtn.addEventListener("click", function () {
       showPasswordChangeBox();
@@ -226,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
       hidePasswordChangeBox();
     });
   }
-//  パスワード変更の非同期処理
+
   async function updatePassword() {
     const currentPassword = currentPasswordInput ? currentPasswordInput.value : "";
     const newPassword = newPasswordInput ? newPasswordInput.value : "";
@@ -275,25 +337,18 @@ document.addEventListener("DOMContentLoaded", function () {
       updatePassword();
     });
   }
-  
+
   /* -------------------------
      退会
   ------------------------- */
-  const withdrawBtn = document.getElementById("withdrawBtn");
-  const accountMenuDefault = document.getElementById("accountMenuDefault");
-  const withdrawConfirmBox = document.getElementById("withdrawConfirmBox");
-  const cancelWithdrawBtn = document.getElementById("cancelWithdrawBtn");
-  const confirmWithdrawBtn = document.getElementById("confirmWithdrawBtn");
-  const withdrawForm = document.getElementById("withdrawForm");
-
-  if (withdrawBtn) {
+  if (withdrawBtn && accountMenuDefault && withdrawConfirmBox) {
     withdrawBtn.addEventListener("click", function () {
       accountMenuDefault.classList.add("hidden");
       withdrawConfirmBox.classList.remove("hidden");
     });
   }
 
-  if (cancelWithdrawBtn) {
+  if (cancelWithdrawBtn && accountMenuDefault && withdrawConfirmBox) {
     cancelWithdrawBtn.addEventListener("click", function () {
       withdrawConfirmBox.classList.add("hidden");
       accountMenuDefault.classList.remove("hidden");

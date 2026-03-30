@@ -82,7 +82,7 @@ public class TaskCreateServlet extends HttpServlet {
 	    Collection<Part> parts = request.getParts();
 
 	    // 最大サイズ（64KB）
-	    long maxSize = 64 * 1024;
+	    long maxSize = 65535;
 
 	    // アップロードされた画像のサイズチェック
 	    for (Part part : parts) {

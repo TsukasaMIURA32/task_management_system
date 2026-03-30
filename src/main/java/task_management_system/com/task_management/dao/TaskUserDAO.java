@@ -170,35 +170,36 @@ public class TaskUserDAO {
     }
     
     public List<UserDTO> searchUsersByNameOrEmail(String keyword) {
-    	List<UserDTO> userList = new ArrayList<>();
+        List<UserDTO> userList = new ArrayList<>();
 
-    	String sql = "SELECT id, name, email "
-    			+ "FROM users "
-    			+ "WHERE name LIKE ? OR email LIKE ? "
-    			+ "ORDER BY name ASC";
+        String sql = "SELECT id, name, email "
+                + "FROM users "
+                + "WHERE role = 0 "
+                + "AND (name LIKE ? OR email LIKE ?) "
+                + "ORDER BY name ASC";
 
-    	try (Connection conn = DBCon.getConnection();
-    			PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBCon.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-    		String likeKeyword = "%" + keyword + "%";
-    		pstmt.setString(1, likeKeyword);
-    		pstmt.setString(2, likeKeyword);
+            String likeKeyword = "%" + keyword + "%";
+            pstmt.setString(1, likeKeyword);
+            pstmt.setString(2, likeKeyword);
 
-    		try (ResultSet rs = pstmt.executeQuery()) {
-    			while (rs.next()) {
-    				UserDTO dto = new UserDTO();
-    				dto.setId(rs.getInt("id"));
-    				dto.setUserName(rs.getString("name"));
-    				dto.setEmail(rs.getString("email"));
-    				userList.add(dto);
-    			}
-    		}
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    UserDTO dto = new UserDTO();
+                    dto.setId(rs.getInt("id"));
+                    dto.setUserName(rs.getString("name"));
+                    dto.setEmail(rs.getString("email"));
+                    userList.add(dto);
+                }
+            }
 
-    	} catch (SQLException e) {
-    		System.out.println("ユーザー検索SQLエラー");
-    		e.printStackTrace();
-    	}
+        } catch (SQLException e) {
+            System.out.println("ユーザー検索SQLエラー");
+            e.printStackTrace();
+        }
 
-    	return userList;
+        return userList;
     }
 }

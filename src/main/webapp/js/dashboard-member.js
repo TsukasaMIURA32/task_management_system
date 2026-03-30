@@ -130,40 +130,41 @@ function initMemberSelector(container) {
                     }
                     return response.json();
                 })
-                .then(function (users) {
-                    /* 毎回検索結果表示をクリアして描き直す */
-                    searchResult.innerHTML = "";
+				.then(function (users) {
+				    console.log("loginUserId =", window.loginUserId);
+				    console.log("users =", users);
 
-                    /* 該当ユーザーがいなければメッセージ表示 */
-                    if (!users || users.length === 0) {
-                        searchResult.innerHTML = '<div class="search-empty">該当ユーザーがいません</div>';
-                        selectedUser = null;
-                        return;
-                    }
+				    searchResult.innerHTML = "";
 
-                    /* 検索候補を1件ずつ描画 */
-                    for (let i = 0; i < users.length; i++) {
-                        const user = users[i];
+				    const filteredUsers = users.filter(function (user) {
+				        console.log("compare:", user.id, window.loginUserId);
+				        return String(user.id) !== String(window.loginUserId);
+				    });
 
-                        const item = document.createElement("div");
-                        item.className = "search-result-item";
-                        item.textContent = user.name + " (" + user.email + ")";
+				    console.log("filteredUsers =", filteredUsers);
 
-                        /* 
-                           候補クリック時
-                           - そのユーザーを selectedUser に保持
-                           - input に名前を表示
-                           - 候補一覧は閉じる
-                        */
-                        item.addEventListener("click", function () {
-                            selectedUser = user;
-                            keywordInput.value = user.name + " (" + user.email + ")";
-                            searchResult.innerHTML = "";
-                        });
+				    if (!filteredUsers || filteredUsers.length === 0) {
+				        searchResult.innerHTML = '<div class="search-empty">該当ユーザーがいません</div>';
+				        selectedUser = null;
+				        return;
+				    }
 
-                        searchResult.appendChild(item);
-                    }
-                })
+				    for (let i = 0; i < filteredUsers.length; i++) {
+				        const user = filteredUsers[i];
+
+				        const item = document.createElement("div");
+				        item.className = "search-result-item";
+				        item.textContent = user.name + " (" + user.email + ")";
+
+				        item.addEventListener("click", function () {
+				            selectedUser = user;
+				            keywordInput.value = user.name + " (" + user.email + ")";
+				            searchResult.innerHTML = "";
+				        });
+
+				        searchResult.appendChild(item);
+				    }
+				})
                 .catch(function (error) {
                     console.error("ユーザー検索エラー", error);
                 });
