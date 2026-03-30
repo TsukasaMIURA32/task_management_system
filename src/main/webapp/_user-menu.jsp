@@ -55,6 +55,8 @@
 					<button type="button" class="save-btn" id="saveEmailBtn">保存</button>
 					<button type="button" class="cancel-btn" id="cancelEmailBtn"><i class="fas fa-times"></i></button>
 				</div>
+				<p id="emailChangeMessage" class="email-change-message"></p>
+				
 				<div class="password-change-link-wrap">
 					<button type="button" id="openPasswordChangeBtn" class="password-change-link-btn">
 						パスワードを変更

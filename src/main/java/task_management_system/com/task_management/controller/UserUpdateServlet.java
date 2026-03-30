@@ -26,10 +26,6 @@ public class UserUpdateServlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
         HttpSession session = request.getSession(false);
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-        
-//      System.out.println("=== UserUpdateServlet ===");
-//      System.out.println("session loginUser = " + loginUser);
 
         if (session == null || session.getAttribute("loginUser") == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -37,7 +33,7 @@ public class UserUpdateServlet extends HttpServlet {
             return;
         }
 
-        request.setAttribute("loginUser", loginUser);
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
 
         String userName = request.getParameter("userName");
         String email = request.getParameter("email");
@@ -52,33 +48,57 @@ public class UserUpdateServlet extends HttpServlet {
         userName = userName.trim();
         email = email.trim();
 
-        if (userName.isEmpty()) {
+        boolean hasUserName = !userName.isEmpty();
+        boolean hasEmail = !email.isEmpty();
+
+        if (!hasUserName && !hasEmail) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"success\":false,\"message\":\"更新する内容がありません。\"}");
+            return;
+        }
+
+        // 更新後の値を、未指定なら現在値で補う
+        String finalUserName = hasUserName ? userName : loginUser.getUserName();
+        String finalEmail = hasEmail ? email : loginUser.getEmail();
+
+        // 名前が送られてきたときだけ名前チェック
+        if (hasUserName && finalUserName.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"success\":false,\"message\":\"名前を入力してください。\"}");
             return;
         }
 
-        if (email.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"メールアドレスを入力してください。\"}");
-            return;
+        // メールが送られてきたときだけメールチェック
+        if (hasEmail) {
+            if (finalEmail.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"success\":false,\"message\":\"メールアドレスを入力してください。\"}");
+                return;
+            }
+
+            if (!finalEmail.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"success\":false,\"message\":\"メールアドレスの形式が正しくありません。\"}");
+                return;
+            }
         }
 
         UserDTO user = new UserDTO();
         user.setId(loginUser.getId());
-        user.setUserName(userName);
-        user.setEmail(email);
+        user.setUserName(finalUserName);
+        user.setEmail(finalEmail);
 
         UserDAO userDAO = new UserDAO();
         int result = userDAO.update(user);
 
-        if (!(result > 0)) {
+        if (result <= 0) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"success\":false,\"message\":\"更新に失敗しました。\"}");
             return;
         }
 
         UserDTO updatedUser = userDAO.getById(loginUser.getId());
+        session.setAttribute("loginUser", updatedUser);
 
         out.print("{");
         out.print("\"success\":true,");

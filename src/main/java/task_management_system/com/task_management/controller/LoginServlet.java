@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
         UserDTO user = userDAO.findByEmail(email);
 
         if (user == null) {
-            request.setAttribute("error", "メールアドレスまたはパスワードが違います。");
+            request.setAttribute("error", "入力されたメールアドレスは登録されていません。");
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             rd.forward(request, response);
             return;

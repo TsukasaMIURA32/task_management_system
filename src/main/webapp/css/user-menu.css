@@ -231,14 +231,16 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
+	margin-bottom: 0px;
 }
 
-.editable-edit {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 4px;
-}
+/*.editable-edit {*/
+/*	display: flex;*/
+/*	align-items: center;*/
+/*	gap: 8px;*/
+/*	margin-bottom: 0px;*/
+/*	margin-top: 4px;*/
+/*}*/
 
 .edit-icon-btn {
 	border: none;
@@ -307,7 +309,7 @@
 #emailDisplay {
   justify-content: center;
   gap: 10px;
-  margin: 4px 0 18px;
+  margin: 4px 0 0px;
 }
 
 #emailDisplay #emailText {
@@ -412,9 +414,9 @@
 }
 
 /* 編集中の入力欄の余白 */
-#emailEdit {
-  margin-bottom: 18px;
-}
+/*#emailEdit {*/
+/*  margin-bottom: 18px;*/
+/*}*/
 
 #nameEdit {
   margin-bottom: 10px;
@@ -511,7 +513,7 @@
   font-size: 14px;
 }
 
-.password-change-message {
+.password-change-message, .email-change-message {
   font-size: 13px;
   color: #d93025;
   min-height: 18px;

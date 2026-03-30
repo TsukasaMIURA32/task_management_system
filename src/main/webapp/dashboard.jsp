@@ -78,14 +78,15 @@
 				<%
 				String flashMessage = (String) session.getAttribute("flashMessage");
 				if (flashMessage != null) {
-					session.removeAttribute("flashMessage");
+				    session.removeAttribute("flashMessage");
+				%>
+				    <div class="toast-message" id="toastMessage">
+				        <i class="fas fa-info-circle"></i>
+				        <span><%= flashMessage %></span>
+				    </div>
+				<%
 				}
-				 if (flashMessage != null) { %>
-					<div class="toast-message" id="toastMessage">
-						<i class="fas fa-info-circle"></i>
-						<span><%= flashMessage %></span>
-					</div>
-				<% } %>
+				%>
 				<section class="note-input-area">
 					<form class="note-form collapsed" id="noteForm"
 						action="<%=request.getContextPath()%>/task/create" method="post"
@@ -320,7 +321,8 @@
 	</div>
 	<!--		==========================================================================================================-->
 <script>
-  window.contextPath = '<%=request.getContextPath()%>';
+  window.contextPath = `<%= request.getContextPath() %>`;
+  window.loginUserId = ${loginUser.id};
 </script>
 <script src="<%=request.getContextPath()%>/js/dashboard-member.js"></script>
 <script src="<%=request.getContextPath()%>/js/dashboard.js"></script>

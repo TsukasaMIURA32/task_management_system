@@ -488,85 +488,83 @@ if (
 	       window.contextPath + "/task/detail?taskId=" + encodeURIComponent(taskId)
 	     );
 
+	     const contentType = response.headers.get("content-type") || "";
+
 	     if (!response.ok) {
-	       const errorData = await response.json();
-	       throw new Error(errorData.error || "タスク詳細の取得に失敗しました。");
+	       if (contentType.includes("application/json")) {
+	         const errorData = await response.json();
+	         throw new Error(errorData.error || "タスク詳細の取得に失敗しました。");
+	       } else {
+	         throw new Error("タスク詳細の取得に失敗しました。しばらくしてから再度お試しください。");
+	       }
+	     }
+
+	     if (!contentType.includes("application/json")) {
+	       throw new Error("タスク詳細の取得に失敗しました。");
 	     }
 
 	     const task = await response.json();
 
-//	  csole.log("task =", task);
-//	  console.log("task.updatedAt =", task.updatedAt);
+	     editTargetId.value = task.id || "";
+	     editNoteTitle.value = task.title || "";
+	     editNoteContent.value = task.content || "";
+	     if (updatedAt) {
+	       updatedAt.textContent = task.updatedAt || "";
+	     }
 
-      /* タスク基本情報をフォームへ反映 */
-	  editTargetId.value = task.id || "";
-	  editNoteTitle.value = task.title || "";
-	  editNoteContent.value = task.content || "";
-	  if (updatedAt) {
-	    updatedAt.textContent = task.updatedAt || "";
-	  }
-	  
-	  /* 編集開始時の元データを保持 */
-	  originalEditTitle = task.title || "";
-	  originalEditContent = task.content || "";
-	  originalEditColorId = String(task.colorId || 1);
-	  originalExistingImageIds = (task.imageIdList || []).map(function (id) {
-	    return String(id);
-	  });
-	  originalSharedUserIds = (task.sharedUsers || []).map(function (user) {
-	    return String(user.id);
-	  }).sort();
+	     originalEditTitle = task.title || "";
+	     originalEditContent = task.content || "";
+	     originalEditColorId = String(task.colorId || 1);
+	     originalExistingImageIds = (task.imageIdList || []).map(function (id) {
+	       return String(id);
+	     });
+	     originalSharedUserIds = (task.sharedUsers || []).map(function (user) {
+	       return String(user.id);
+	     }).sort();
 
-      if (editNoteColorId) {
-        editNoteColorId.value = task.colorId || 1;
-      }
+	     if (editNoteColorId) {
+	       editNoteColorId.value = task.colorId || 1;
+	     }
 
-      /* 削除予定画像IDを初期化 */
-      if (editDeleteImageIds) {
-        editDeleteImageIds.value = "";
-      }
+	     if (editDeleteImageIds) {
+	       editDeleteImageIds.value = "";
+	     }
 
-      /* 新規追加画像状態を初期化 */
-      selectedNewFiles = [];
-      if (editNoteImage) {
-        editNoteImage.value = "";
-      }
+	     selectedNewFiles = [];
+	     if (editNoteImage) {
+	       editNoteImage.value = "";
+	     }
 
-      /* 背景色反映 */
-      const colorClass = getColorClassByColorId(task.colorId);
-      setEditFormColor(colorClass);
-      setActiveEditChipByColor(colorClass);
+	     const colorClass = getColorClassByColorId(task.colorId);
+	     setEditFormColor(colorClass);
+	     setActiveEditChipByColor(colorClass);
 
-      /* 画像・共有ユーザー反映 */
-      renderUnifiedPreview(task.imageIdList || []);
-      renderEditSharedUsers(task.sharedUsers || []);
-	  
+	     renderUnifiedPreview(task.imageIdList || []);
+	     renderEditSharedUsers(task.sharedUsers || []);
 
-      /* 共同編集者モーダル側の初期値も合わせる */
-      if (window.editMemberSelectorApi) {
-        window.editMemberSelectorApi.setUsers(task.sharedUsers || []);
-      }
+	     if (window.editMemberSelectorApi) {
+	       window.editMemberSelectorApi.setUsers(task.sharedUsers || []);
+	     }
 
-      /* オーナーなら削除、共有相手なら共有解除 */
-      if (editDeleteButton) {
-        if (task.isOwner) {
-          editDeleteButton.textContent = "削除";
-          editDeleteButton.dataset.deleteMode = "owner";
-        } else {
-          editDeleteButton.textContent = "共有を解除";
-          editDeleteButton.dataset.deleteMode = "member";
-        }
-      }
+	     if (editDeleteButton) {
+	       if (task.isOwner) {
+	         editDeleteButton.textContent = "削除";
+	         editDeleteButton.dataset.deleteMode = "owner";
+	       } else {
+	         editDeleteButton.textContent = "共有を解除";
+	         editDeleteButton.dataset.deleteMode = "member";
+	       }
+	     }
 
-      closeEditPopovers();
-      closeEditMemberModalFn();
-      editModalOverlay.classList.add("show");
+	     closeEditPopovers();
+	     closeEditMemberModalFn();
+	     editModalOverlay.classList.add("show");
 
-	  } catch (error) {
-		  console.error("タスク詳細取得エラー:", error);
-		  showToastMessage(error.message);
-	  }
-  }
+	   } catch (error) {
+	     console.error("タスク詳細取得エラー:", error);
+	     showToastMessage(error.message || "タスク詳細の取得に失敗しました。");
+	   }
+	 }
 
   /* 一覧カードクリック時に編集モーダルを開く */
   for (let i = 0; i < noteCards.length; i++) {
@@ -582,7 +580,7 @@ if (
   /* エラーメッセージの表示 */
   function showToastMessage(message) {
     let toast = document.getElementById("toastMessage");
-
+ 	console.log(toast);
     if (!toast) {
       toast = document.createElement("div");
       toast.id = "toastMessage";
