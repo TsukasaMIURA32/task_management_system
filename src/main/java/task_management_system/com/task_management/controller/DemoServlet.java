@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import task_management_system.com.task_management.dao.UserDAO;
 import task_management_system.com.task_management.dto.UserDTO;
 
-@WebServlet("/")
+@WebServlet("/demo")
 public class DemoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
