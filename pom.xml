@@ -52,6 +52,7 @@
 									<artifactId>webapp-runner</artifactId>
 									<version>10.1.15.0</version>
 									<destFileName>webapp-runner.jar</destFileName>
+									<outputDirectory>${project.build.directory}/dependency</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
