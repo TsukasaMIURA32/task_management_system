@@ -7,9 +7,9 @@ import java.sql.SQLException;
 //DB接続クラス
 public class DBCon {
  // データベースへの接続情報
- private static final String JDBC_URL = "jdbc:mysql://localhost:3306/task_management_db";
- private static final String USER     = "root";
- private static final String PASSWORD = "";
+ private static final String JDBC_URL = "jdbc:mysql://localhost:3306/task_management_system_db";
+ private static final String USER     = "appuser";
+ private static final String PASSWORD = "password1234!";
 //JDBCドライバを追加しよう
  private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
 
