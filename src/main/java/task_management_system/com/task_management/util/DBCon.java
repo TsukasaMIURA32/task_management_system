@@ -10,9 +10,11 @@ public class DBCon {
     // ローカル用
     private static final String JDBC_URL =
             "jdbc:mysql://localhost:3306/task_management_system_db"
-            + "?useSSL=false"
-            + "&characterEncoding=UTF-8"
-            + "&serverTimezone=Asia/Tokyo";
+            		+ "?useSSL=true"
+            		+ "&requireSSL=true"
+            		+ "&verifyServerCertificate=false"
+            		+ "&characterEncoding=UTF-8"
+            		+ "&serverTimezone=Asia/Tokyo";
 
     private static final String USER = "appuser";
     private static final String PASSWORD = "password1234!";
