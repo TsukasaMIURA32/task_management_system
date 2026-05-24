@@ -39,6 +39,7 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         UserDAO userDAO = new UserDAO();
+        System.out.println("email=[" + email + "]");
         UserDTO user = userDAO.findByEmail(email);
 
         if (user == null) {
