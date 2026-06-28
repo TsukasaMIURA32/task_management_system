@@ -44,6 +44,7 @@ public class DBCon {
                         + dbUri.getPort()
                         + dbUri.getPath()
                         + "?useSSL=false"
+                        + "&allowPublicKeyRetrieval=true"
                         + "&characterEncoding=UTF-8"
                         + "&serverTimezone=Asia/Tokyo";
 
